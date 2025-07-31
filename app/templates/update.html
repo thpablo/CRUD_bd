@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Item{% endblock %}
+
+{% block content %}
+  <h1>Update Item</h1>
+  <form action="{{ url_for('update_item', item_id=item.id) }}" method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ item.name }}" required>
+    <label for="description">Description:</label>
+    <input type="text" id="description" name="description" value="{{ item.description }}">
+    <button type="submit">Update</button>
+  </form>
+{% endblock %}
