@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultado da Consulta{% endblock %}
+
+{% block content %}
+  <h1>Resultado da Consulta</h1>
+
+  <h2>Tecnologias Emprestáveis</h2>
+  <ul>
+    {% for tecnologia in tecnologias %}
+      <li>{{ tecnologia.tecnologia.modelo }} - {{ tecnologia.status }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

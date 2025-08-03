@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultado da Consulta{% endblock %}
+
+{% block content %}
+  <h1>Resultado da Consulta</h1>
+
+  <h2>Alunos</h2>
+  <ul>
+    {% for aluno in alunos %}
+      <li>{{ aluno.pessoa.nome }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
