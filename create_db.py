@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-# ...existing code...
 from app import db, app
-# ...existing code...
+
 with app.app_context():
     db.create_all()

@@ -9,4 +9,40 @@
     <input type="text" id="nome" name="nome" value="{{ pessoa.nome }}" required>
     <button type="submit">Update</button>
   </form>
+
+  <hr>
+
+  <h2>Telefones</h2>
+  <ul>
+    {% for telefone in pessoa.telefones %}
+      <li>
+        {{ telefone.telefone }}
+        <a href="{{ url_for('delete_telefone', cpf=pessoa.cpf, telefone=telefone.telefone) }}">Delete</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <form action="{{ url_for('add_telefone', cpf=pessoa.cpf) }}" method="post">
+    <label for="telefone">Telefone:</label>
+    <input type="text" id="telefone" name="telefone" required>
+    <button type="submit">Add Telefone</button>
+  </form>
+
+  <hr>
+
+  <h2>Emails</h2>
+  <ul>
+    {% for email in pessoa.emails %}
+      <li>
+        {{ email.email }}
+        <a href="{{ url_for('delete_email', cpf=pessoa.cpf, email=email.email) }}">Delete</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <form action="{{ url_for('add_email', cpf=pessoa.cpf) }}" method="post">
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" required>
+    <button type="submit">Add Email</button>
+  </form>
 {% endblock %}
