@@ -4,9 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>{% block title %}{% endblock %}</title>
+    <title>CAIN - UFOP</title>
   </head>
   <body>
+    <header>
+      <h1>CAIN - Coordenadoria de Acessibilidade e Inclusão</h1>
+      <h2>Universidade Federal de Ouro Preto</h2>
+    </header>
     <nav>
       <a href="{{ url_for('index') }}">Home</a>
       <a href="{{ url_for('pessoas') }}">Pessoas</a>
@@ -16,5 +20,8 @@
     <div class="container">
       {% block content %}{% endblock %}
     </div>
+    <footer>
+      <p>&copy; 2024 Universidade Federal de Ouro Preto</p>
+    </footer>
   </body>
 </html>

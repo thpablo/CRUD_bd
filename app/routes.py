@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for
 from app import app, db
-from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor
+from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor, Aluno, Servidor, Docente, TecnicoAdministrativo, Terceirizado, Cargo
 
 @app.route('/')
 def index():
@@ -11,15 +11,68 @@ def pessoas():
     pessoas = Pessoa.query.all()
     return render_template('pessoas.html', pessoas=pessoas)
 
-@app.route('/pessoa/add', methods=['POST'])
-def add_pessoa():
-    cpf = request.form.get('cpf')
-    nome = request.form.get('nome')
-    if cpf and nome:
-        new_pessoa = Pessoa(cpf=cpf, nome=nome)
-        db.session.add(new_pessoa)
-        db.session.commit()
-    return redirect(url_for('index'))
+@app.route('/pessoa/add')
+def add_pessoa_form():
+    return render_template('add_pessoa.html')
+
+@app.route('/aluno/add', methods=['GET', 'POST'])
+def add_aluno():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf')
+        nome = request.form.get('nome')
+        matricula = request.form.get('matricula')
+        codigo_curso = request.form.get('codigo_curso')
+        if cpf and nome and matricula and codigo_curso:
+            new_pessoa = Pessoa(cpf=cpf, nome=nome)
+            db.session.add(new_pessoa)
+            db.session.commit()
+            new_aluno = Aluno(cpf=cpf, matricula=matricula, codigo_curso=codigo_curso)
+            db.session.add(new_aluno)
+            db.session.commit()
+            return redirect(url_for('pessoas'))
+    cursos = Curso.query.all()
+    return render_template('add_aluno.html', cursos=cursos)
+
+@app.route('/servidor/add', methods=['GET', 'POST'])
+def add_servidor():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf')
+        nome = request.form.get('nome')
+        tipo_contrato = request.form.get('tipo_contrato')
+        codigo_departamento = request.form.get('codigo_departamento')
+        tipo_servidor = request.form.get('tipo_servidor')
+
+        if cpf and nome and tipo_contrato and codigo_departamento and tipo_servidor:
+            new_pessoa = Pessoa(cpf=cpf, nome=nome)
+            db.session.add(new_pessoa)
+            db.session.commit()
+
+            new_servidor = Servidor(cpf=cpf, tipodecontrato=tipo_contrato, codigo_departamento=codigo_departamento)
+            db.session.add(new_servidor)
+            db.session.commit()
+
+            if tipo_servidor == 'docente':
+                siape = request.form.get('siape')
+                new_docente = Docente(cpf_servidor=cpf, siape=siape)
+                db.session.add(new_docente)
+                db.session.commit()
+            elif tipo_servidor == 'tecnico':
+                siape = request.form.get('siape')
+                id_cargo = request.form.get('id_cargo')
+                new_tecnico = TecnicoAdministrativo(cpf_servidor=cpf, siape=siape, id_cargo=id_cargo)
+                db.session.add(new_tecnico)
+                db.session.commit()
+            elif tipo_servidor == 'terceirizado':
+                id_cargo = request.form.get('id_cargo')
+                new_terceirizado = Terceirizado(cpf_servidor=cpf, id_cargo=id_cargo)
+                db.session.add(new_terceirizado)
+                db.session.commit()
+
+            return redirect(url_for('pessoas'))
+
+    departamentos = DepartamentoSetor.query.all()
+    cargos = Cargo.query.all()
+    return render_template('add_servidor.html', departamentos=departamentos, cargos=cargos)
 
 @app.route('/pessoa/update/<string:cpf>', methods=['POST'])
 def update_pessoa(cpf):

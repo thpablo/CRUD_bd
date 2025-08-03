@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Pessoa{% endblock %}
+
+{% block content %}
+  <h1>Add Pessoa</h1>
+
+  <div>
+    <a href="{{ url_for('add_aluno') }}">Add Aluno</a>
+    <a href="{{ url_for('add_servidor') }}">Add Servidor</a>
+  </div>
+{% endblock %}
