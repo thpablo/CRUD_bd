@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for
 from app import app, db
-from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor, Aluno, Servidor, Docente, TecnicoAdministrativo, Terceirizado, Cargo, Bolsista, TecnologiaEmprestavel
+from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor, Aluno, Servidor, Docente, TecnicoAdministrativo, Terceirizado, Cargo
 
 @app.route('/')
 def index():
@@ -159,52 +159,3 @@ def add_departamento():
         db.session.add(new_departamento)
         db.session.commit()
     return redirect(url_for('departamentos'))
-
-@app.route('/consultas')
-def consultas():
-    return render_template('consultas.html')
-
-@app.route('/consulta1', methods=['GET', 'POST'])
-def consulta1():
-    if request.method == 'POST':
-        codigo_curso = request.form.get('codigo_curso')
-        alunos = Aluno.query.filter_by(codigo_curso=codigo_curso).all()
-        return render_template('resultado_consulta1.html', alunos=alunos)
-    cursos = Curso.query.all()
-    return render_template('form_consulta1.html', cursos=cursos)
-
-@app.route('/consulta2', methods=['GET', 'POST'])
-def consulta2():
-    if request.method == 'POST':
-        codigo_departamento = request.form.get('codigo_departamento')
-        servidores = Servidor.query.filter_by(codigo_departamento=codigo_departamento).all()
-        return render_template('resultado_consulta2.html', servidores=servidores)
-    departamentos = DepartamentoSetor.query.all()
-    return render_template('form_consulta2.html', departamentos=departamentos)
-
-@app.route('/consulta3')
-def consulta3():
-    bolsistas = Bolsista.query.all()
-    return render_template('resultado_consulta3.html', bolsistas=bolsistas)
-
-@app.route('/consulta4')
-def consulta4():
-    tecnologias = TecnologiaEmprestavel.query.all()
-    return render_template('resultado_consulta4.html', tecnologias=tecnologias)
-
-@app.route('/update_pessoa_nome', methods=['POST'])
-def update_pessoa_nome():
-    cpf = request.form.get('cpf')
-    nome = request.form.get('nome')
-    pessoa = Pessoa.query.get_or_404(cpf)
-    pessoa.nome = nome
-    db.session.commit()
-    return redirect(url_for('pessoas'))
-
-@app.route('/delete_pessoa_by_cpf', methods=['POST'])
-def delete_pessoa_by_cpf():
-    cpf = request.form.get('cpf')
-    pessoa = Pessoa.query.get_or_404(cpf)
-    db.session.delete(pessoa)
-    db.session.commit()
-    return redirect(url_for('pessoas'))
