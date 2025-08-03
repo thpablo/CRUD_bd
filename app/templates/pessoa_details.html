@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}Update Pessoa{% endblock %}
+{% block title %}Pessoa Details{% endblock %}
 
 {% block content %}
-  <h1>Update Pessoa</h1>
+  <h1>Pessoa Details</h1>
+
   <form action="{{ url_for('update_pessoa', cpf=pessoa.cpf) }}" method="post">
     <label for="nome">Nome:</label>
     <input type="text" id="nome" name="nome" value="{{ pessoa.nome }}" required>
@@ -45,4 +46,23 @@
     <input type="text" id="email" name="email" required>
     <button type="submit">Add Email</button>
   </form>
+
+  <hr>
+
+  <h2>Roles</h2>
+  <ul>
+    {% if pessoa.aluno %}
+      <li>Aluno</li>
+    {% endif %}
+    {% if pessoa.servidor %}
+      <li>Servidor</li>
+    {% endif %}
+    {% if pessoa.aluno and pessoa.aluno.id_pcd %}
+      <li>PCD</li>
+    {% elif pessoa.servidor and pessoa.servidor.docente and pessoa.servidor.docente.id_pcd %}
+      <li>PCD</li>
+    {% elif pessoa.servidor and pessoa.servidor.tecnicoadministrativo and pessoa.servidor.tecnicoadministrativo.id_pcd %}
+      <li>PCD</li>
+    {% endif %}
+  </ul>
 {% endblock %}
