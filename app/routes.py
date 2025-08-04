@@ -47,7 +47,6 @@ def add_pessoa():
                         db.session.add(ContatoTelefones(cpf=cpf, telefone=telefone))
 
             # --- Vínculos e Status ---
-            # Estas variáveis vão guardar as instâncias para serem usadas depois
             aluno_instance = None
             servidor_instance = None
             docente_instance = None
@@ -99,7 +98,7 @@ def add_pessoa():
             if is_pcd:
                 pcd_instance = PCD()
                 db.session.add(pcd_instance)
-                db.session.flush() # Para obter o ID do PCD antes do commit final
+                db.session.flush()
 
                 deficiencias = request.form.getlist('deficiencias[]')
                 graus = request.form.getlist('graus[]')
@@ -108,7 +107,6 @@ def add_pessoa():
                     if deficiencia_id:
                         db.session.add(DadosDeficiencia_PCD(id_pcd=pcd_instance.id, id_deficiencia=deficiencia_id, grau=graus[i], observacoes=observacoes[i]))
 
-                # Associa o ID do PCD à instância do Aluno/Servidor
                 if aluno_instance and request.form.get('is_aluno_pcd'):
                     aluno_instance.id_pcd = pcd_instance.id
                 if docente_instance:
@@ -131,7 +129,6 @@ def add_pessoa():
                     data_fim = date.fromisoformat(data_fim_str) if data_fim_str else None
                     db.session.add(PeriodoDeVinculo(chave_membrodaequipe=cpf, datadeinicio=data_inicio, datadefim=data_fim))
 
-                # Associa a chave do membro à instância do Aluno/Servidor
                 if aluno_instance and request.form.get('is_aluno_membro'):
                     aluno_instance.chave_membrodaequipe = cpf
                 if tecnico_instance and request.form.get('is_tecnico_membro'):
@@ -148,7 +145,6 @@ def add_pessoa():
             flash(f'Ocorreu um erro: {e}', 'error')
             return redirect(url_for('add_pessoa'))
 
-    # For GET request, fetch data needed for the form's dropdowns.
     cursos = Curso.query.all()
     departamentos = DepartamentoSetor.query.all()
     cargos = Cargo.query.all()
