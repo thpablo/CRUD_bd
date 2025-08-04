@@ -1,12 +1,217 @@
 {% extends 'base.html' %}
 
-{% block title %}Add Pessoa{% endblock %}
+{% block title %}Adicionar Pessoa{% endblock %}
 
 {% block content %}
-  <h1>Add Pessoa</h1>
+<h1>Adicionar Nova Pessoa</h1>
 
-  <div>
-    <a href="{{ url_for('add_aluno') }}">Add Aluno</a>
-    <a href="{{ url_for('add_servidor') }}">Add Servidor</a>
-  </div>
+<form action="{{ url_for('add_pessoa') }}" method="post">
+
+    <!-- Informações Básicas -->
+    <h2>Informações Básicas</h2>
+    <div>
+        <label for="cpf">CPF:</label>
+        <input type="text" id="cpf" name="cpf" required>
+    </div>
+    <div>
+        <label for="nome">Nome Completo:</label>
+        <input type="text" id="nome" name="nome" required>
+    </div>
+    <div>
+        <label for="nomesocial">Nome Social (Opcional):</label>
+        <input type="text" id="nomesocial" name="nomesocial">
+    </div>
+
+    <!-- Contatos -->
+    <h2>Contatos</h2>
+    <div id="emails-container">
+        <label>E-mails:</label>
+        <div class="email-entry">
+            <input type="email" name="emails[]" placeholder="exemplo@dominio.com">
+        </div>
+        <button type="button" onclick="addEmailInput()">Adicionar Outro E-mail</button>
+    </div>
+    <div id="telefones-container">
+        <label>Telefones:</label>
+        <div class="telefone-entry">
+            <input type="tel" name="telefones[]" placeholder="(00) 91234-5678">
+        </div>
+        <button type="button" onclick="addTelefoneInput()">Adicionar Outro Telefone</button>
+    </div>
+
+    <!-- Vínculos -->
+    <h2>Vínculos com a Instituição</h2>
+    <div>
+        <input type="checkbox" id="is_aluno" name="is_aluno" value="true">
+        <label for="is_aluno">É Aluno?</label>
+    </div>
+    <div>
+        <input type="checkbox" id="is_servidor" name="is_servidor" value="true">
+        <label for="is_servidor">É Servidor?</label>
+    </div>
+    <hr>
+
+    <!-- Seção Aluno -->
+    <div id="aluno_fields" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Aluno</h3>
+        <input type="checkbox" id="is_aluno_pcd" name="is_aluno_pcd" class="pcd-checkbox"> <label for="is_aluno_pcd">É PCD?</label><br>
+        <input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox"> <label for="is_aluno_membro">É Membro da Equipe CAIN?</label>
+        <div>
+            <label for="matricula">Matrícula:</label>
+            <input type="text" id="matricula" name="matricula">
+        </div>
+        <div>
+            <label for="codigo_curso">Curso:</label>
+            <select id="codigo_curso" name="codigo_curso">
+                {% for curso in cursos %}<option value="{{ curso.codigo }}">{{ curso.nome }}</option>{% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Seção Servidor -->
+    <div id="servidor_fields" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Servidor</h3>
+        <!-- Campos comuns de servidor -->
+        <label for="tipo_contrato">Tipo de Contrato:</label> <input type="text" id="tipo_contrato" name="tipo_contrato"><br>
+        <label for="codigo_departamento">Departamento:</label>
+        <select id="codigo_departamento" name="codigo_departamento">
+            {% for departamento in departamentos %}<option value="{{ departamento.codigo }}">{{ departamento.nome }}</option>{% endfor %}
+        </select><br>
+        <label for="tipo_servidor">Tipo de Servidor:</label>
+        <select id="tipo_servidor" name="tipo_servidor" onchange="showServidorSubFields()">
+            <option value="">Selecione...</option>
+            <option value="docente">Docente</option>
+            <option value="tecnico">Técnico Administrativo</option>
+            <option value="terceirizado">Terceirizado</option>
+        </select>
+
+        <!-- Sub-seção Docente -->
+        <div id="docente_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Docente</h4>
+            <input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> <label for="is_docente_pcd">É PCD (Obrigatório)</label><br>
+            <label for="siape_docente">SIAPE:</label> <input type="text" id="siape_docente" name="siape_docente">
+        </div>
+
+        <!-- Sub-seção Técnico -->
+        <div id="tecnico_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Técnico Administrativo</h4>
+            <input type="checkbox" id="is_tecnico_pcd" name="is_tecnico_pcd" class="pcd-checkbox"> <label for="is_tecnico_pcd">É PCD?</label><br>
+            <input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox"> <label for="is_tecnico_membro">É Membro da Equipe CAIN?</label><br>
+            <label for="siape_tecnico">SIAPE:</label> <input type="text" id="siape_tecnico" name="siape_tecnico"><br>
+            <label for="id_cargo_tecnico">Cargo:</label>
+            <select id="id_cargo_tecnico" name="id_cargo_tecnico">
+                {% for cargo in cargos %}<option value="{{ cargo.id }}">{{ cargo.nome }}</option>{% endfor %}
+            </select>
+        </div>
+
+        <!-- Sub-seção Terceirizado -->
+        <div id="terceirizado_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Terceirizado</h4>
+            <input type="checkbox" id="is_terceirizado_membro" name="is_terceirizado_membro" class="membro-checkbox" checked disabled> <label for="is_terceirizado_membro">É Membro da Equipe CAIN (Obrigatório)</label><br>
+            <label for="id_cargo_terceirizado">Cargo:</label>
+            <select id="id_cargo_terceirizado" name="id_cargo_terceirizado">
+                {% for cargo in cargos %}<option value="{{ cargo.id }}">{{ cargo.nome }}</option>{% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Seção Detalhes PCD -->
+    <div id="pcd_details" class="dynamic-section" style="display:none;">
+        <h3>Detalhes da Deficiência</h3>
+        <div id="deficiencias-container">
+            <div class="deficiencia-entry">
+                <select name="deficiencias[]">
+                    {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id }}">{{ deficiencia.categoria }}</option>{% endfor %}
+                </select>
+                <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+                <input type="text" name="observacoes[]" placeholder="Observação">
+            </div>
+        </div>
+        <button type="button" onclick="addDeficienciaInput()">Adicionar Outra Deficiência</button>
+    </div>
+
+    <!-- Seção Detalhes Membro CAIN -->
+    <div id="membro_details" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Membro da Equipe CAIN</h3>
+        <label for="regime_trabalho">Regime de Trabalho:</label> <input type="text" name="regime_trabalho" placeholder="Presencial, a distância ou híbrido"><br>
+        <label for="categoria_membro">Categoria:</label> <input type="text" name="categoria_membro"><br>
+        <h4>Período de Vínculo</h4>
+        <label for="data_inicio_vinculo">Data de Início:</label> <input type="date" name="data_inicio_vinculo"><br>
+        <label for="data_fim_vinculo">Data de Término:</label> <input type="date" name="data_fim_vinculo">
+    </div>
+
+    <br>
+    <button type="submit">Salvar Pessoa</button>
+</form>
+
+<script>
+// --- Event Listeners ---
+document.getElementById('is_aluno').addEventListener('change', (e) => toggleSection('aluno_fields', e.target.checked));
+document.getElementById('is_servidor').addEventListener('change', (e) => toggleSection('servidor_fields', e.target.checked));
+document.querySelectorAll('.pcd-checkbox').forEach(cb => cb.addEventListener('change', updatePcdDetailsVisibility));
+document.querySelectorAll('.membro-checkbox').forEach(cb => cb.addEventListener('change', updateMembroDetailsVisibility));
+
+function toggleSection(sectionId, isVisible) {
+    document.getElementById(sectionId).style.display = isVisible ? 'block' : 'none';
+}
+
+function updatePcdDetailsVisibility() {
+    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => cb.checked);
+    toggleSection('pcd_details', isAnyPcd);
+}
+
+function updateMembroDetailsVisibility() {
+    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => cb.checked);
+    toggleSection('membro_details', isAnyMembro);
+}
+
+function showServidorSubFields() {
+    const tipo = document.getElementById("tipo_servidor").value;
+    document.querySelectorAll('.servidor-sub-section').forEach(sec => sec.style.display = 'none');
+    if (tipo) {
+        document.getElementById(tipo + "_fields").style.display = "block";
+    }
+    // Manually trigger visibility updates for dependent sections
+    updatePcdDetailsVisibility();
+    updateMembroDetailsVisibility();
+}
+
+// --- Dynamic Input Adders ---
+function addEmailInput() {
+    const container = document.getElementById('emails-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'email-entry';
+    newEntry.innerHTML = '<input type="email" name="emails[]" placeholder="exemplo@dominio.com"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+function addTelefoneInput() {
+    const container = document.getElementById('telefones-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'telefone-entry';
+    newEntry.innerHTML = '<input type="tel" name="telefones[]" placeholder="(00) 91234-5678"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+function addDeficienciaInput() {
+    const container = document.getElementById('deficiencias-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'deficiencia-entry';
+    const originalSelect = document.querySelector('[name="deficiencias[]"]');
+    newEntry.innerHTML = `
+        ${originalSelect.outerHTML}
+        <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+        <input type="text" name="observacoes[]" placeholder="Observação">
+        <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    `;
+    container.appendChild(newEntry);
+}
+
+// --- Initial State Setup ---
+document.addEventListener('DOMContentLoaded', () => {
+    toggleSection('aluno_fields', document.getElementById('is_aluno').checked);
+    toggleSection('servidor_fields', document.getElementById('is_servidor').checked);
+    showServidorSubFields();
+});
+</script>
 {% endblock %}
