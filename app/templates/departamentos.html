@@ -14,18 +14,30 @@
     {% endfor %}
   </ul>
 
-  <h2>Add Departamento</h2>
   <form action="{{ url_for('add_departamento') }}" method="post">
-    <label for="codigo">Codigo:</label>
-    <input type="text" id="codigo" name="codigo" required>
-    <label for="nome">Nome:</label>
-    <input type="text" id="nome" name="nome" required>
-    <label for="localizacao">Localizacao:</label>
-    <input type="text" id="localizacao" name="localizacao" required>
-    <label for="telefone">Telefone:</label>
-    <input type="text" id="telefone" name="telefone" required>
-    <label for="email">Email:</label>
-    <input type="text" id="email" name="email" required>
-    <button type="submit">Add</button>
+    <h2>Adicionar Novo Departamento</h2>
+    <div>
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" name="codigo" required>
+    </div>
+    <div>
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required>
+    </div>
+    <div>
+        <label for="localizacao">Localização:</label>
+        <input type="text" id="localizacao" name="localizacao">
+    </div>
+    <div>
+        <label for="telefone">Telefone:</label>
+        <input type="text" id="telefone" name="telefone">
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+    </div>
+    <div style="text-align: right;">
+        <button type="submit">Adicionar Departamento</button>
+    </div>
   </form>
 {% endblock %}
