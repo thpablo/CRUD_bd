@@ -10,7 +10,8 @@ def index():
 
 @app.route('/pessoas')
 def pessoas():
-    pessoas = Pessoa.query.all()
+    # Modern query style
+    pessoas = db.session.execute(db.select(Pessoa)).scalars().all()
     return render_template('pessoas.html', pessoas=pessoas)
 
 @app.route('/pessoa/add', methods=['GET', 'POST'])
@@ -30,8 +31,6 @@ def add_pessoa():
 
             # --- PessoaLGBT ---
             if request.form.get('nomesocial'):
-                # The relationship is one-to-one, so we can assign directly.
-                # SQLAlchemy will handle creating or updating the related object.
                 if not pessoa.pessoalgbt:
                     pessoa.pessoalgbt = PessoaLGBT(NomeSocial=request.form.get('nomesocial'))
                 else:
@@ -53,15 +52,15 @@ def add_pessoa():
                         db.session.add(ContatoTelefones(CPF=cpf, Telefone=tel_str))
 
             # --- Vínculos e Status ---
-            pcd_instance = None # To hold the created PCD object if any
-            membro_instance = None # To hold the created MembroDaEquipe object if any
+            pcd_instance = None
+            membro_instance = None
 
             # --- Status PCD ---
             is_pcd = request.form.get('is_aluno_pcd') or request.form.get('is_tecnico_pcd') or request.form.get('is_docente_pcd')
             if is_pcd:
                 pcd_instance = PCD()
                 db.session.add(pcd_instance)
-                db.session.flush() # Flush to get the auto-generated pcd_instance.ID_PCD
+                db.session.flush()
 
                 deficiencias = request.form.getlist('deficiencias[]')
                 graus = request.form.getlist('graus[]')
@@ -84,7 +83,7 @@ def add_pessoa():
                     RegimeDeTrabalho=request.form.get('regime_trabalho')
                 )
                 db.session.add(membro_instance)
-                db.session.flush() # Flush to get the auto-generated ID_MEMBRO
+                db.session.flush()
 
                 data_inicio_str = request.form.get('data_inicio_vinculo')
                 if data_inicio_str:
@@ -113,12 +112,9 @@ def add_pessoa():
 
                     matricula_exists = db.session.query(MatriculadoEm).filter_by(CPF=cpf, Codigo=codigo_curso).first()
                     if not matricula_exists:
-                        curso = db.session.get(Curso, codigo_curso)
+                        curso = db.session.get(Curso, int(codigo_curso))
                         if curso:
-                            matricula_obj = MatriculadoEm(
-                                Situacao='Cursando',
-                                DataInicio=date.today()
-                            )
+                            matricula_obj = MatriculadoEm(Situacao='Cursando', DataInicio=date.today())
                             matricula_obj.curso = curso
                             aluno.matriculas.append(matricula_obj)
 
@@ -128,7 +124,7 @@ def add_pessoa():
                 if not servidor:
                     servidor = Servidor(TipoDeContrato=request.form.get('tipo_contrato'))
                     cod_depto = request.form.get('codigo_departamento')
-                    departamento = db.session.get(DepartamentoSetor, cod_depto)
+                    departamento = db.session.get(DepartamentoSetor, int(cod_depto))
                     servidor.departamento = departamento
                     pessoa.servidor = servidor
 
@@ -146,7 +142,7 @@ def add_pessoa():
                     id_cargo = request.form.get('id_cargo_tecnico')
                     if siape and id_cargo and not servidor.tecnico_administrativo:
                         tecnico = TecnicoAdministrativo(SIAPE=siape)
-                        cargo = db.session.get(Cargo, id_cargo)
+                        cargo = db.session.get(Cargo, int(id_cargo))
                         tecnico.cargo = cargo
                         if pcd_instance and request.form.get('is_tecnico_pcd'):
                             tecnico.pcd = pcd_instance
@@ -158,7 +154,7 @@ def add_pessoa():
                     id_cargo = request.form.get('id_cargo_terceirizado')
                     if id_cargo and not servidor.terceirizado:
                         terceirizado = Terceirizado()
-                        cargo = db.session.get(Cargo, id_cargo)
+                        cargo = db.session.get(Cargo, int(id_cargo))
                         terceirizado.cargo = cargo
                         if membro_instance:
                             terceirizado.membro_da_equipe = membro_instance
@@ -184,7 +180,6 @@ def add_pessoa():
 
 @app.route('/pessoa/update/<string:cpf>', methods=['POST'])
 def update_pessoa(cpf):
-    # Use db.session.get for fetching by primary key
     pessoa = db.session.get(Pessoa, cpf)
     if not pessoa:
         flash('Pessoa não encontrada.', 'error')
@@ -218,7 +213,6 @@ def edit_pessoa(cpf):
 def add_telefone(cpf):
     telefone_str = request.form.get('telefone')
     if telefone_str:
-        # Check if it already exists
         exists = db.session.query(ContatoTelefones).filter_by(CPF=cpf, Telefone=telefone_str).first()
         if not exists:
             new_telefone = ContatoTelefones(CPF=cpf, Telefone=telefone_str)
@@ -263,7 +257,7 @@ def delete_email(cpf, email):
 
 @app.route('/cursos')
 def cursos():
-    cursos = Curso.query.all()
+    cursos = db.session.execute(db.select(Curso)).scalars().all()
     return render_template('cursos.html', cursos=cursos)
 
 @app.route('/curso/add', methods=['POST'])
@@ -274,18 +268,19 @@ def add_curso():
     nivel_formacao = request.form.get('nivel_formacao')
     if codigo and nome:
         new_curso = Curso(
-            CODIGO=codigo,
+            CODIGO=int(codigo),
             Nome=nome,
             Modalidade=modalidade,
             NivelDeFormacao=nivel_formacao
         )
         db.session.add(new_curso)
         db.session.commit()
+        flash('Curso adicionado com sucesso!', 'success')
     return redirect(url_for('cursos'))
 
 @app.route('/departamentos')
 def departamentos():
-    departamentos = DepartamentoSetor.query.all()
+    departamentos = db.session.execute(db.select(DepartamentoSetor)).scalars().all()
     return render_template('departamentos.html', departamentos=departamentos)
 
 @app.route('/departamento/add', methods=['POST'])
@@ -297,7 +292,7 @@ def add_departamento():
     email = request.form.get('email')
     if codigo and nome:
         new_departamento = DepartamentoSetor(
-            CODIGO=codigo,
+            CODIGO=int(codigo),
             Nome=nome,
             Localizacao=localizacao,
             Telefone=telefone,
@@ -305,4 +300,5 @@ def add_departamento():
         )
         db.session.add(new_departamento)
         db.session.commit()
+        flash('Departamento adicionado com sucesso!', 'success')
     return redirect(url_for('departamentos'))
