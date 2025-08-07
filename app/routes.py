@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for
 from app import app, db
 from flask import flash
-from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor, Aluno, Servidor, Docente, TecnicoAdministrativo, Terceirizado, Cargo, MatriculadoEm, PessoaLGBT, Deficiencia, PCD, DadosDeficiencia_PCD, MembroDaEquipe, PeriodoDeVinculo
+from app.models import Pessoa, ContatoTelefones, ContatoEmails, Curso, DepartamentoSetor, Aluno, Servidor, Docente, TecnicoAdministrativo, Terceirizado, Cargo, MatriculadoEm, PessoaLGBT, Deficiencia, PCD, DadosDeficienciaPCD, MembroDaEquipe, PeriodoDeVinculo
 from datetime import date
 
 @app.route('/')
