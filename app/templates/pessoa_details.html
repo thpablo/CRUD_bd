@@ -5,9 +5,9 @@
 {% block content %}
   <h1>Pessoa Details</h1>
 
-  <form action="{{ url_for('update_pessoa', cpf=pessoa.CPF) }}" method="post">
+  <form action="{{ url_for('update_pessoa', cpf=pessoa.cpf) }}" method="post">
     <label for="nome">Nome:</label>
-    <input type="text" id="nome" name="nome" value="{{ pessoa.Nome }}" required>
+    <input type="text" id="nome" name="nome" value="{{ pessoa.nome }}" required>
     <button type="submit">Update</button>
   </form>
 
@@ -17,13 +17,13 @@
   <ul>
     {% for telefone in pessoa.telefones %}
       <li>
-        {{ telefone.Telefone }}
-        <a href="{{ url_for('delete_telefone', cpf=pessoa.CPF, telefone=telefone.Telefone) }}">Delete</a>
+        {{ telefone.telefone }}
+        <a href="{{ url_for('delete_telefone', cpf=pessoa.cpf, telefone=telefone.telefone) }}">Delete</a>
       </li>
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_telefone', cpf=pessoa.CPF) }}" method="post">
+  <form action="{{ url_for('add_telefone', cpf=pessoa.cpf) }}" method="post">
     <label for="telefone">Telefone:</label>
     <input type="text" id="telefone" name="telefone" required>
     <button type="submit">Add Telefone</button>
@@ -35,13 +35,13 @@
   <ul>
     {% for email in pessoa.emails %}
       <li>
-        {{ email.Email }}
-        <a href="{{ url_for('delete_email', cpf=pessoa.CPF, email=email.Email) }}">Delete</a>
+        {{ email.email }}
+        <a href="{{ url_for('delete_email', cpf=pessoa.cpf, email=email.email) }}">Delete</a>
       </li>
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_email', cpf=pessoa.CPF) }}" method="post">
+  <form action="{{ url_for('add_email', cpf=pessoa.cpf) }}" method="post">
     <label for="email">Email:</label>
     <input type="text" id="email" name="email" required>
     <button type="submit">Add Email</button>
