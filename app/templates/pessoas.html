@@ -13,8 +13,8 @@
   <ul>
     {% for pessoa in pessoas %}
       <li>
-        <a href="{{ url_for('edit_pessoa', cpf=pessoa.cpf) }}">{{ pessoa.nome }}</a>
-        <span>{{ pessoa.cpf }}</span>
+        <a href="{{ url_for('edit_pessoa', cpf=pessoa.CPF) }}">{{ pessoa.Nome }}</a>
+        <span>{{ pessoa.CPF }}</span>
       </li>
     {% endfor %}
   </ul>

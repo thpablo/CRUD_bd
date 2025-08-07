@@ -22,119 +22,147 @@ def add_pessoa():
                 flash('CPF é obrigatório.', 'error')
                 return redirect(url_for('add_pessoa'))
 
-            # --- Pessoa e Contatos ---
-            pessoa = Pessoa.query.get(cpf)
+            # Use session.get for primary key lookups, it's more efficient
+            pessoa = db.session.get(Pessoa, cpf)
             if not pessoa:
-                pessoa = Pessoa(cpf=cpf, nome=request.form.get('nome'))
+                pessoa = Pessoa(CPF=cpf, Nome=request.form.get('nome'))
                 db.session.add(pessoa)
 
+            # --- PessoaLGBT ---
             if request.form.get('nomesocial'):
-                pessoalgbt = PessoaLGBT.query.get(cpf)
-                if not pessoalgbt:
-                    pessoalgbt = PessoaLGBT(cpf=cpf, nomesocial=request.form.get('nomesocial'))
-                    db.session.add(pessoalgbt)
+                # The relationship is one-to-one, so we can assign directly.
+                # SQLAlchemy will handle creating or updating the related object.
+                if not pessoa.pessoalgbt:
+                    pessoa.pessoalgbt = PessoaLGBT(NomeSocial=request.form.get('nomesocial'))
+                else:
+                    pessoa.pessoalgbt.NomeSocial = request.form.get('nomesocial')
 
-            emails = request.form.getlist('emails[]')
-            for email in emails:
-                if email:
-                    if not ContatoEmails.query.get((cpf, email)):
-                        db.session.add(ContatoEmails(cpf=cpf, email=email))
+            # --- Contatos ---
+            emails_in_form = request.form.getlist('emails[]')
+            for email_str in emails_in_form:
+                if email_str:
+                    exists = db.session.query(ContatoEmails).filter_by(CPF=cpf, Email=email_str).first()
+                    if not exists:
+                        db.session.add(ContatoEmails(CPF=cpf, Email=email_str))
 
-            telefones = request.form.getlist('telefones[]')
-            for telefone in telefones:
-                if telefone:
-                    if not ContatoTelefones.query.get((cpf, telefone)):
-                        db.session.add(ContatoTelefones(cpf=cpf, telefone=telefone))
+            telefones_in_form = request.form.getlist('telefones[]')
+            for tel_str in telefones_in_form:
+                if tel_str:
+                    exists = db.session.query(ContatoTelefones).filter_by(CPF=cpf, Telefone=tel_str).first()
+                    if not exists:
+                        db.session.add(ContatoTelefones(CPF=cpf, Telefone=tel_str))
 
             # --- Vínculos e Status ---
-            aluno_instance = None
-            servidor_instance = None
-            docente_instance = None
-            tecnico_instance = None
-            terceirizado_instance = None
+            pcd_instance = None # To hold the created PCD object if any
+            membro_instance = None # To hold the created MembroDaEquipe object if any
+
+            # --- Status PCD ---
+            is_pcd = request.form.get('is_aluno_pcd') or request.form.get('is_tecnico_pcd') or request.form.get('is_docente_pcd')
+            if is_pcd:
+                pcd_instance = PCD()
+                db.session.add(pcd_instance)
+                db.session.flush() # Flush to get the auto-generated pcd_instance.ID_PCD
+
+                deficiencias = request.form.getlist('deficiencias[]')
+                graus = request.form.getlist('graus[]')
+                observacoes = request.form.getlist('observacoes[]')
+                for i, deficiencia_id_str in enumerate(deficiencias):
+                    if deficiencia_id_str:
+                        dados_def = DadosDeficienciaPCD(
+                            ID_PCD=pcd_instance.ID_PCD,
+                            ID_DEFICIENCIA=int(deficiencia_id_str),
+                            Grau=graus[i],
+                            Observacoes=observacoes[i]
+                        )
+                        db.session.add(dados_def)
+
+            # --- Status Membro da Equipe CAIN ---
+            is_membro = request.form.get('is_aluno_membro') or request.form.get('is_tecnico_membro') or request.form.get('is_terceirizado_membro')
+            if is_membro:
+                membro_instance = MembroDaEquipe(
+                    Categoria=request.form.get('categoria_membro'),
+                    RegimeDeTrabalho=request.form.get('regime_trabalho')
+                )
+                db.session.add(membro_instance)
+                db.session.flush() # Flush to get the auto-generated ID_MEMBRO
+
+                data_inicio_str = request.form.get('data_inicio_vinculo')
+                if data_inicio_str:
+                    vinculo = PeriodoDeVinculo(
+                        DataDeInicio=date.fromisoformat(data_inicio_str),
+                        DataDeFim=date.fromisoformat(request.form.get('data_fim_vinculo')) if request.form.get('data_fim_vinculo') else None,
+                        ID_MEMBRO=membro_instance.ID_MEMBRO
+                    )
+                    db.session.add(vinculo)
 
             # --- Vínculo Aluno ---
             if request.form.get('is_aluno'):
                 matricula = request.form.get('matricula')
                 codigo_curso = request.form.get('codigo_curso')
                 if matricula and codigo_curso:
-                    aluno_instance = Aluno.query.get(cpf)
-                    if not aluno_instance:
-                        aluno_instance = Aluno(cpf=cpf, matricula=matricula)
-                        db.session.add(aluno_instance)
-                    if not MatriculadoEm.query.get((cpf, codigo_curso)):
-                        db.session.add(MatriculadoEm(cpf_aluno=cpf, codigo_curso=codigo_curso, datainicio=date.today()))
+                    aluno = pessoa.aluno
+                    if not aluno:
+                        aluno = Aluno(Matricula=matricula)
+                        pessoa.aluno = aluno
+
+                    if pcd_instance and request.form.get('is_aluno_pcd'):
+                        aluno.pcd = pcd_instance
+
+                    if membro_instance and request.form.get('is_aluno_membro'):
+                        aluno.membro_da_equipe = membro_instance
+
+                    matricula_exists = db.session.query(MatriculadoEm).filter_by(CPF=cpf, Codigo=codigo_curso).first()
+                    if not matricula_exists:
+                        curso = db.session.get(Curso, codigo_curso)
+                        if curso:
+                            matricula_obj = MatriculadoEm(
+                                Situacao='Cursando',
+                                DataInicio=date.today()
+                            )
+                            matricula_obj.curso = curso
+                            aluno.matriculas.append(matricula_obj)
 
             # --- Vínculo Servidor ---
             if request.form.get('is_servidor'):
-                tipo_contrato = request.form.get('tipo_contrato')
-                codigo_departamento = request.form.get('codigo_departamento')
-                if tipo_contrato and codigo_departamento:
-                    servidor_instance = Servidor.query.get(cpf)
-                    if not servidor_instance:
-                        servidor_instance = Servidor(cpf=cpf, tipodecontrato=tipo_contrato, codigo_departamento=codigo_departamento)
-                        db.session.add(servidor_instance)
+                servidor = pessoa.servidor
+                if not servidor:
+                    servidor = Servidor(TipoDeContrato=request.form.get('tipo_contrato'))
+                    cod_depto = request.form.get('codigo_departamento')
+                    departamento = db.session.get(DepartamentoSetor, cod_depto)
+                    servidor.departamento = departamento
+                    pessoa.servidor = servidor
 
-                    tipo_servidor = request.form.get('tipo_servidor')
-                    if tipo_servidor == 'docente':
-                        siape = request.form.get('siape_docente')
-                        if siape and not Docente.query.get(cpf):
-                            docente_instance = Docente(cpf_servidor=cpf, siape=siape)
-                            db.session.add(docente_instance)
-                    elif tipo_servidor == 'tecnico':
-                        siape = request.form.get('siape_tecnico')
-                        id_cargo = request.form.get('id_cargo_tecnico')
-                        if siape and id_cargo and not TecnicoAdministrativo.query.get(cpf):
-                            tecnico_instance = TecnicoAdministrativo(cpf_servidor=cpf, siape=siape, id_cargo=id_cargo)
-                            db.session.add(tecnico_instance)
-                    elif tipo_servidor == 'terceirizado':
-                        id_cargo = request.form.get('id_cargo_terceirizado')
-                        if id_cargo and not Terceirizado.query.get(cpf):
-                            terceirizado_instance = Terceirizado(cpf_servidor=cpf, id_cargo=id_cargo)
-                            db.session.add(terceirizado_instance)
+                tipo_servidor = request.form.get('tipo_servidor')
+                if tipo_servidor == 'docente':
+                    siape = request.form.get('siape_docente')
+                    if siape and not servidor.docente:
+                        docente = Docente(SIAPE=siape)
+                        if pcd_instance:
+                            docente.pcd = pcd_instance
+                        servidor.docente = docente
 
-            # --- Status PCD ---
-            is_pcd = request.form.get('is_aluno_pcd') or request.form.get('is_tecnico_pcd') or request.form.get('tipo_servidor') == 'docente'
-            if is_pcd:
-                pcd_instance = PCD()
-                db.session.add(pcd_instance)
-                db.session.flush()
+                elif tipo_servidor == 'tecnico':
+                    siape = request.form.get('siape_tecnico')
+                    id_cargo = request.form.get('id_cargo_tecnico')
+                    if siape and id_cargo and not servidor.tecnico_administrativo:
+                        tecnico = TecnicoAdministrativo(SIAPE=siape)
+                        cargo = db.session.get(Cargo, id_cargo)
+                        tecnico.cargo = cargo
+                        if pcd_instance and request.form.get('is_tecnico_pcd'):
+                            tecnico.pcd = pcd_instance
+                        if membro_instance and request.form.get('is_tecnico_membro'):
+                            tecnico.membro_da_equipe = membro_instance
+                        servidor.tecnico_administrativo = tecnico
 
-                deficiencias = request.form.getlist('deficiencias[]')
-                graus = request.form.getlist('graus[]')
-                observacoes = request.form.getlist('observacoes[]')
-                for i, deficiencia_id in enumerate(deficiencias):
-                    if deficiencia_id:
-                        db.session.add(DadosDeficiencia_PCD(id_pcd=pcd_instance.id, id_deficiencia=deficiencia_id, grau=graus[i], observacoes=observacoes[i]))
-
-                if aluno_instance and request.form.get('is_aluno_pcd'):
-                    aluno_instance.id_pcd = pcd_instance.id
-                if docente_instance:
-                    docente_instance.id_pcd = pcd_instance.id
-                if tecnico_instance and request.form.get('is_tecnico_pcd'):
-                    tecnico_instance.id_pcd = pcd_instance.id
-
-            # --- Status Membro da Equipe CAIN ---
-            is_membro = request.form.get('is_aluno_membro') or request.form.get('is_tecnico_membro') or request.form.get('tipo_servidor') == 'terceirizado'
-            if is_membro:
-                membro_instance = MembroDaEquipe.query.get(cpf)
-                if not membro_instance:
-                    membro_instance = MembroDaEquipe(chave=cpf, categoria=request.form.get('categoria_membro'), regimedetrabalho=request.form.get('regime_trabalho'))
-                    db.session.add(membro_instance)
-
-                data_inicio_str = request.form.get('data_inicio_vinculo')
-                if data_inicio_str:
-                    data_inicio = date.fromisoformat(data_inicio_str)
-                    data_fim_str = request.form.get('data_fim_vinculo')
-                    data_fim = date.fromisoformat(data_fim_str) if data_fim_str else None
-                    db.session.add(PeriodoDeVinculo(chave_membrodaequipe=cpf, datadeinicio=data_inicio, datadefim=data_fim))
-
-                if aluno_instance and request.form.get('is_aluno_membro'):
-                    aluno_instance.chave_membrodaequipe = cpf
-                if tecnico_instance and request.form.get('is_tecnico_membro'):
-                    tecnico_instance.chave_membrodaequipe = cpf
-                if terceirizado_instance:
-                    terceirizado_instance.chave_membrodaequipe = cpf
+                elif tipo_servidor == 'terceirizado':
+                    id_cargo = request.form.get('id_cargo_terceirizado')
+                    if id_cargo and not servidor.terceirizado:
+                        terceirizado = Terceirizado()
+                        cargo = db.session.get(Cargo, id_cargo)
+                        terceirizado.cargo = cargo
+                        if membro_instance:
+                            terceirizado.membro_da_equipe = membro_instance
+                        servidor.terceirizado = terceirizado
 
             db.session.commit()
             flash('Pessoa adicionada com sucesso!', 'success')
@@ -143,64 +171,94 @@ def add_pessoa():
         except Exception as e:
             db.session.rollback()
             flash(f'Ocorreu um erro: {e}', 'error')
+            print(f"Error in add_pessoa: {e}")
             return redirect(url_for('add_pessoa'))
 
-    cursos = Curso.query.all()
-    departamentos = DepartamentoSetor.query.all()
-    cargos = Cargo.query.all()
-    deficiencias = Deficiencia.query.all()
+    # GET request logic
+    cursos = db.session.execute(db.select(Curso)).scalars().all()
+    departamentos = db.session.execute(db.select(DepartamentoSetor)).scalars().all()
+    cargos = db.session.execute(db.select(Cargo)).scalars().all()
+    deficiencias = db.session.execute(db.select(Deficiencia)).scalars().all()
     return render_template('add_pessoa.html', cursos=cursos, departamentos=departamentos, cargos=cargos, deficiencias=deficiencias)
 
 
 @app.route('/pessoa/update/<string:cpf>', methods=['POST'])
 def update_pessoa(cpf):
-    pessoa = Pessoa.query.get_or_404(cpf)
-    pessoa.nome = request.form.get('nome')
+    # Use db.session.get for fetching by primary key
+    pessoa = db.session.get(Pessoa, cpf)
+    if not pessoa:
+        flash('Pessoa não encontrada.', 'error')
+        return redirect(url_for('pessoas'))
+
+    pessoa.Nome = request.form.get('nome')
     db.session.commit()
-    return redirect(url_for('index'))
+    flash('Pessoa atualizada com sucesso!', 'success')
+    return redirect(url_for('edit_pessoa', cpf=cpf))
 
 @app.route('/pessoa/delete/<string:cpf>')
 def delete_pessoa(cpf):
-    pessoa = Pessoa.query.get_or_404(cpf)
-    db.session.delete(pessoa)
-    db.session.commit()
-    return redirect(url_for('index'))
+    pessoa = db.session.get(Pessoa, cpf)
+    if pessoa:
+        db.session.delete(pessoa)
+        db.session.commit()
+        flash('Pessoa deletada com sucesso!', 'success')
+    else:
+        flash('Pessoa não encontrada.', 'error')
+    return redirect(url_for('pessoas'))
 
 @app.route('/pessoa/edit/<string:cpf>')
 def edit_pessoa(cpf):
-    pessoa = Pessoa.query.get_or_404(cpf)
+    pessoa = db.session.get(Pessoa, cpf)
+    if not pessoa:
+        flash('Pessoa não encontrada.', 'error')
+        return redirect(url_for('pessoas'))
     return render_template('pessoa_details.html', pessoa=pessoa)
 
 @app.route('/pessoa/<string:cpf>/add_telefone', methods=['POST'])
 def add_telefone(cpf):
-    telefone = request.form.get('telefone')
-    if telefone:
-        new_telefone = ContatoTelefones(cpf=cpf, telefone=telefone)
-        db.session.add(new_telefone)
-        db.session.commit()
+    telefone_str = request.form.get('telefone')
+    if telefone_str:
+        # Check if it already exists
+        exists = db.session.query(ContatoTelefones).filter_by(CPF=cpf, Telefone=telefone_str).first()
+        if not exists:
+            new_telefone = ContatoTelefones(CPF=cpf, Telefone=telefone_str)
+            db.session.add(new_telefone)
+            db.session.commit()
+            flash('Telefone adicionado.', 'success')
+        else:
+            flash('Telefone já existe.', 'info')
     return redirect(url_for('edit_pessoa', cpf=cpf))
 
 @app.route('/pessoa/<string:cpf>/delete_telefone/<string:telefone>')
 def delete_telefone(cpf, telefone):
-    telefone_obj = ContatoTelefones.query.filter_by(cpf=cpf, telefone=telefone).first_or_404()
-    db.session.delete(telefone_obj)
-    db.session.commit()
+    telefone_obj = db.session.query(ContatoTelefones).filter_by(CPF=cpf, Telefone=telefone).first()
+    if telefone_obj:
+        db.session.delete(telefone_obj)
+        db.session.commit()
+        flash('Telefone deletado.', 'success')
     return redirect(url_for('edit_pessoa', cpf=cpf))
 
 @app.route('/pessoa/<string:cpf>/add_email', methods=['POST'])
 def add_email(cpf):
-    email = request.form.get('email')
-    if email:
-        new_email = ContatoEmails(cpf=cpf, email=email)
-        db.session.add(new_email)
-        db.session.commit()
+    email_str = request.form.get('email')
+    if email_str:
+        exists = db.session.query(ContatoEmails).filter_by(CPF=cpf, Email=email_str).first()
+        if not exists:
+            new_email = ContatoEmails(CPF=cpf, Email=email_str)
+            db.session.add(new_email)
+            db.session.commit()
+            flash('Email adicionado.', 'success')
+        else:
+            flash('Email já existe.', 'info')
     return redirect(url_for('edit_pessoa', cpf=cpf))
 
 @app.route('/pessoa/<string:cpf>/delete_email/<string:email>')
 def delete_email(cpf, email):
-    email_obj = ContatoEmails.query.filter_by(cpf=cpf, email=email).first_or_404()
-    db.session.delete(email_obj)
-    db.session.commit()
+    email_obj = db.session.query(ContatoEmails).filter_by(CPF=cpf, Email=email).first()
+    if email_obj:
+        db.session.delete(email_obj)
+        db.session.commit()
+        flash('Email deletado.', 'success')
     return redirect(url_for('edit_pessoa', cpf=cpf))
 
 @app.route('/cursos')
@@ -215,7 +273,12 @@ def add_curso():
     modalidade = request.form.get('modalidade')
     nivel_formacao = request.form.get('nivel_formacao')
     if codigo and nome:
-        new_curso = Curso(codigo=codigo, nome=nome, modalidade=modalidade, nivel_formacao=nivel_formacao)
+        new_curso = Curso(
+            CODIGO=codigo,
+            Nome=nome,
+            Modalidade=modalidade,
+            NivelDeFormacao=nivel_formacao
+        )
         db.session.add(new_curso)
         db.session.commit()
     return redirect(url_for('cursos'))
@@ -233,7 +296,13 @@ def add_departamento():
     telefone = request.form.get('telefone')
     email = request.form.get('email')
     if codigo and nome:
-        new_departamento = DepartamentoSetor(codigo=codigo, nome=nome, localizacao=localizacao, telefone=telefone, email=email)
+        new_departamento = DepartamentoSetor(
+            CODIGO=codigo,
+            Nome=nome,
+            Localizacao=localizacao,
+            Telefone=telefone,
+            Email=email
+        )
         db.session.add(new_departamento)
         db.session.commit()
     return redirect(url_for('departamentos'))

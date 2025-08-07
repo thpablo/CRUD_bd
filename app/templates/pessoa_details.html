@@ -5,9 +5,9 @@
 {% block content %}
   <h1>Pessoa Details</h1>
 
-  <form action="{{ url_for('update_pessoa', cpf=pessoa.cpf) }}" method="post">
+  <form action="{{ url_for('update_pessoa', cpf=pessoa.CPF) }}" method="post">
     <label for="nome">Nome:</label>
-    <input type="text" id="nome" name="nome" value="{{ pessoa.nome }}" required>
+    <input type="text" id="nome" name="nome" value="{{ pessoa.Nome }}" required>
     <button type="submit">Update</button>
   </form>
 
@@ -17,13 +17,13 @@
   <ul>
     {% for telefone in pessoa.telefones %}
       <li>
-        {{ telefone.telefone }}
-        <a href="{{ url_for('delete_telefone', cpf=pessoa.cpf, telefone=telefone.telefone) }}">Delete</a>
+        {{ telefone.Telefone }}
+        <a href="{{ url_for('delete_telefone', cpf=pessoa.CPF, telefone=telefone.Telefone) }}">Delete</a>
       </li>
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_telefone', cpf=pessoa.cpf) }}" method="post">
+  <form action="{{ url_for('add_telefone', cpf=pessoa.CPF) }}" method="post">
     <label for="telefone">Telefone:</label>
     <input type="text" id="telefone" name="telefone" required>
     <button type="submit">Add Telefone</button>
@@ -35,13 +35,13 @@
   <ul>
     {% for email in pessoa.emails %}
       <li>
-        {{ email.email }}
-        <a href="{{ url_for('delete_email', cpf=pessoa.cpf, email=email.email) }}">Delete</a>
+        {{ email.Email }}
+        <a href="{{ url_for('delete_email', cpf=pessoa.CPF, email=email.Email) }}">Delete</a>
       </li>
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_email', cpf=pessoa.cpf) }}" method="post">
+  <form action="{{ url_for('add_email', cpf=pessoa.CPF) }}" method="post">
     <label for="email">Email:</label>
     <input type="text" id="email" name="email" required>
     <button type="submit">Add Email</button>
@@ -52,17 +52,17 @@
   <h2>Roles</h2>
   <ul>
     {% if pessoa.aluno %}
-      <li>Aluno</li>
+      <li>Aluno
+        {% if pessoa.aluno.pcd %} (PCD) {% endif %}
+        {% if pessoa.aluno.membro_da_equipe %} (Membro da Equipe) {% endif %}
+      </li>
     {% endif %}
     {% if pessoa.servidor %}
-      <li>Servidor</li>
-    {% endif %}
-    {% if pessoa.aluno and pessoa.aluno.id_pcd %}
-      <li>PCD</li>
-    {% elif pessoa.servidor and pessoa.servidor.docente and pessoa.servidor.docente.id_pcd %}
-      <li>PCD</li>
-    {% elif pessoa.servidor and pessoa.servidor.tecnicoadministrativo and pessoa.servidor.tecnicoadministrativo.id_pcd %}
-      <li>PCD</li>
+      <li>Servidor
+        {% if pessoa.servidor.docente %} (Docente {% if pessoa.servidor.docente.pcd %}PCD{% endif %}) {% endif %}
+        {% if pessoa.servidor.tecnico_administrativo %} (Técnico Administrativo {% if pessoa.servidor.tecnico_administrativo.pcd %}PCD{% endif %}{% if pessoa.servidor.tecnico_administrativo.membro_da_equipe %}, Membro da Equipe{% endif %}) {% endif %}
+        {% if pessoa.servidor.terceirizado %} (Terceirizado, Membro da Equipe) {% endif %}
+      </li>
     {% endif %}
   </ul>
 {% endblock %}
