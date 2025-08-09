@@ -226,4 +226,4 @@ INSERT INTO EmprestimoMaterial (ID_PCD, ID_MATERIAL, DataEmprestimo, DevolucaoEs
 -- Assistência
 INSERT INTO PrestaAssistencia (ID_PCD, ID_ACAO, ID_MEMBRO_CAIN, DataInicio) VALUES
 (1, 503, 1, '2023-08-10'), -- Ana Clara (PCD) recebe monitoria dela mesma (Bolsista de Inclusão)
-(2, 501, 2, '2022-09-01'); -- Carlos (PCD) recebe apoio psicológico de Daniela (Coordenadora/Psicóloga)
+(2, 501, 2, '2022-09-01');
