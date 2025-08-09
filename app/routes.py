@@ -60,7 +60,7 @@ def alunos_por_curso(codigo_curso):
     # First, get course details
     sql_curso = text("SELECT * FROM curso WHERE codigo = :codigo")
     result_curso = db.session.execute(sql_curso, {'codigo': codigo_curso}).first()
-    curso = result_curso.mappings() if result_curso else None
+    curso = result_curso if result_curso else None
 
     # Now, get the students with a JOIN
     sql_alunos_query = get_sql_from_file('select_alunos_by_curso.sql')
@@ -332,7 +332,7 @@ def assign_role():
         else:
             sql_query = get_sql_from_file('select_pessoa_by_cpf.sql')
             result = db.session.execute(text(sql_query), {'cpf': search_cpf}).first()
-            pessoa = result.mappings() if result else None
+            pessoa = result if result else None
             if not pessoa:
                 flash('Pessoa com o CPF informado não encontrada.', 'error')
 
