@@ -28,10 +28,10 @@ def cursos():
             flash('Código and Nome are required fields.', 'error')
         else:
             new_curso = Curso(
-                CODIGO=codigo,
-                Nome=nome,
-                Modalidade=modalidade,
-                NivelDeFormacao=nivel_formacao
+                codigo=codigo,
+                nome=nome,
+                modalidade=modalidade,
+                nivel_de_formacao=nivel_formacao
             )
             db.session.add(new_curso)
             db.session.commit()
@@ -54,11 +54,11 @@ def departamentos():
             flash('Código and Nome are required fields.', 'error')
         else:
             new_departamento = DepartamentoSetor(
-                CODIGO=codigo,
-                Nome=nome,
-                Localizacao=localizacao,
-                Telefone=telefone,
-                Email=email
+                codigo=codigo,
+                nome=nome,
+                localizacao=localizacao,
+                telefone=telefone,
+                email=email
             )
             db.session.add(new_departamento)
             db.session.commit()
@@ -73,25 +73,25 @@ def add_pessoa():
     if request.method == 'POST':
         try:
             # Basic Pessoa Info
-            cpf = request.form.get('cpf')
-            if not cpf or Pessoa.query.get(cpf):
+            cpf_form = request.form.get('cpf')
+            if not cpf_form or Pessoa.query.get(cpf_form):
                 flash('CPF is required and must be unique.', 'error')
                 return redirect(url_for('add_pessoa'))
 
-            new_pessoa = Pessoa(CPF=cpf, Nome=request.form.get('nome'))
+            new_pessoa = Pessoa(cpf=cpf_form, nome=request.form.get('nome'))
             db.session.add(new_pessoa)
 
             # PessoaLGBT Info
             if request.form.get('nomesocial'):
-                new_pessoa.lgbt_info = PessoaLGBT(NomeSocial=request.form.get('nomesocial'))
+                new_pessoa.lgbt_info = PessoaLGBT(nome_social=request.form.get('nomesocial'))
 
             # Contact Info
-            for email in request.form.getlist('emails[]'):
-                if email:
-                    new_pessoa.emails.append(ContatoEmails(Email=email))
-            for telefone in request.form.getlist('telefones[]'):
-                if telefone:
-                    new_pessoa.telefones.append(ContatoTelefones(Telefone=telefone))
+            for email_form in request.form.getlist('emails[]'):
+                if email_form:
+                    new_pessoa.emails.append(ContatoEmails(email=email_form))
+            for telefone_form in request.form.getlist('telefones[]'):
+                if telefone_form:
+                    new_pessoa.telefones.append(ContatoTelefones(telefone=telefone_form))
 
             # --- Flags and Shared Objects ---
             is_pcd = any([
@@ -117,72 +117,72 @@ def add_pessoa():
                 for i, def_id in enumerate(deficiencia_ids):
                     if def_id:
                         dados = DadosDeficienciaPCD(
-                            ID_PCD=pcd_obj.ID_PCD,
-                            ID_DEFICIENCIA=def_id,
-                            Grau=graus[i],
-                            Observacoes=observacoes[i]
+                            id_pcd=pcd_obj.id_pcd,
+                            id_deficiencia=def_id,
+                            grau=graus[i],
+                            observacoes=observacoes[i]
                         )
                         db.session.add(dados)
 
             membro_obj = None
             if is_membro:
                 membro_obj = MembroDaEquipe(
-                    RegimeDeTrabalho=request.form.get('regime_trabalho'),
-                    Categoria=request.form.get('categoria_membro')
+                    regime_de_trabalho=request.form.get('regime_trabalho'),
+                    categoria=request.form.get('categoria_membro')
                 )
                 db.session.add(membro_obj)
                 db.session.flush()
                 if request.form.get('data_inicio_vinculo'):
                     vinculo = PeriodoDeVinculoMembro(
-                        ID_MEMBRO=membro_obj.ID_MEMBRO,
-                        DataDeInicio=request.form.get('data_inicio_vinculo'),
-                        DataDeFim=request.form.get('data_fim_vinculo') or None
+                        id_membro=membro_obj.id_membro,
+                        data_de_inicio=request.form.get('data_inicio_vinculo'),
+                        data_de_fim=request.form.get('data_fim_vinculo') or None
                     )
                     db.session.add(vinculo)
 
             # --- Roles ---
             if request.form.get('is_aluno'):
                 aluno_obj = Aluno(
-                    Matricula=request.form.get('matricula'),
-                    ID_PCD=pcd_obj.ID_PCD if pcd_obj and request.form.get('is_aluno_pcd') else None,
-                    ID_MEMBRO=membro_obj.ID_MEMBRO if membro_obj and request.form.get('is_aluno_membro') else None
+                    matricula=request.form.get('matricula'),
+                    id_pcd=pcd_obj.id_pcd if pcd_obj and request.form.get('is_aluno_pcd') else None,
+                    id_membro=membro_obj.id_membro if membro_obj and request.form.get('is_aluno_membro') else None
                 )
                 new_pessoa.aluno = aluno_obj
 
                 curso_codigo = request.form.get('codigo_curso')
                 if curso_codigo:
                     matricula_rel = MatriculadoEm(
-                        CPF=new_pessoa.CPF,
-                        Codigo=curso_codigo
+                        cpf=new_pessoa.cpf,
+                        codigo=curso_codigo
                     )
                     db.session.add(matricula_rel)
 
             if request.form.get('is_servidor'):
                 servidor_obj = Servidor(
-                    TipoDeContrato=request.form.get('tipo_contrato'),
-                    CodigoDepartamentoSetor=request.form.get('codigo_departamento')
+                    tipo_de_contrato=request.form.get('tipo_contrato'),
+                    codigo_departamento_setor=request.form.get('codigo_departamento')
                 )
                 new_pessoa.servidor = servidor_obj
 
                 tipo_servidor = request.form.get('tipo_servidor')
                 if tipo_servidor == 'docente':
                     docente_obj = Docente(
-                        SIAPE=request.form.get('siape_docente'),
-                        ID_PCD=pcd_obj.ID_PCD if pcd_obj else None
+                        siape=request.form.get('siape_docente'),
+                        id_pcd=pcd_obj.id_pcd if pcd_obj else None
                     )
                     servidor_obj.docente = docente_obj
                 elif tipo_servidor == 'tecnico':
                     tecnico_obj = TecnicoAdministrativo(
-                        SIAPE=request.form.get('siape_tecnico'),
-                        ID_CARGO=request.form.get('id_cargo_tecnico'),
-                        ID_PCD=pcd_obj.ID_PCD if pcd_obj and request.form.get('is_tecnico_pcd') else None,
-                        ID_MEMBRO=membro_obj.ID_MEMBRO if membro_obj and request.form.get('is_tecnico_membro') else None
+                        siape=request.form.get('siape_tecnico'),
+                        id_cargo=request.form.get('id_cargo_tecnico'),
+                        id_pcd=pcd_obj.id_pcd if pcd_obj and request.form.get('is_tecnico_pcd') else None,
+                        id_membro=membro_obj.id_membro if membro_obj and request.form.get('is_tecnico_membro') else None
                     )
                     servidor_obj.tecnico = tecnico_obj
                 elif tipo_servidor == 'terceirizado':
                     terceirizado_obj = Terceirizado(
-                        ID_CARGO=request.form.get('id_cargo_terceirizado'),
-                        ID_MEMBRO=membro_obj.ID_MEMBRO if membro_obj else None
+                        id_cargo=request.form.get('id_cargo_terceirizado'),
+                        id_membro=membro_obj.id_membro if membro_obj else None
                     )
                     servidor_obj.terceirizado = terceirizado_obj
 
