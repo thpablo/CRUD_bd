@@ -58,7 +58,7 @@
     </div>
 
     <!-- Seção Aluno -->
-    <div id="aluno_fields" class="dynamic-section" style="display: {% if pessoa.aluno %'block'{% else %}'none'{% endif %};">
+    <div id="aluno_fields" class="dynamic-section" style="display: {{ 'block' if pessoa.aluno else 'none' }};">
         <h3>Detalhes do Aluno</h3>
         <label><input type="checkbox" id="is_aluno_pcd" name="is_aluno_pcd" class="pcd-checkbox" {% if pessoa.aluno and pessoa.aluno.pcd %}checked{% endif %}> É PCD?</label>
         <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox" {% if pessoa.aluno and pessoa.aluno.membro_equipe %}checked{% endif %}> É Membro da Equipe CAIN?</label>
@@ -76,7 +76,7 @@
     </div>
 
     <!-- Seção Servidor -->
-    <div id="servidor_fields" class="dynamic-section" style="display: {% if pessoa.servidor %}'block'{% else %}'none'{% endif %};">
+    <div id="servidor_fields" class="dynamic-section" style="display: {{ 'block' if pessoa.servidor else 'none' }};">
         <h3>Detalhes do Servidor</h3>
         <div>
             <label for="tipodecontrato">Tipo de Contrato:</label>
@@ -165,10 +165,86 @@
 {% endif %}
 
 <script>
-// (JavaScript from assign_role.html would go here, adapted for editing)
 // --- Event Listeners ---
 document.getElementById('is_aluno')?.addEventListener('change', (e) => toggleSection('aluno_fields', e.target.checked));
 document.getElementById('is_servidor')?.addEventListener('change', (e) => toggleSection('servidor_fields', e.target.checked));
-// ... and so on
+document.querySelectorAll('.pcd-checkbox').forEach(cb => cb.addEventListener('change', updatePcdDetailsVisibility));
+document.querySelectorAll('.membro-checkbox').forEach(cb => cb.addEventListener('change', updateMembroDetailsVisibility));
+
+function toggleSection(sectionId, isVisible) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.style.display = isVisible ? 'block' : 'none';
+    }
+}
+
+function updatePcdDetailsVisibility() {
+    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => cb.checked);
+    toggleSection('pcd_details', isAnyPcd);
+}
+
+function updateMembroDetailsVisibility() {
+    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => cb.checked);
+    toggleSection('membro_details', isAnyMembro);
+}
+
+function showServidorSubFields() {
+    const tipo = document.getElementById("tipo_servidor")?.value;
+    document.querySelectorAll('.servidor-sub-section').forEach(sec => sec.style.display = 'none');
+    if (tipo) {
+        const section = document.getElementById(tipo + "_fields");
+        if (section) {
+            section.style.display = "block";
+        }
+    }
+    updatePcdDetailsVisibility();
+    updateMembroDetailsVisibility();
+}
+
+// --- Dynamic Input Adders ---
+function addEmailInput() {
+    const container = document.getElementById('emails-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'email-entry';
+    newEntry.innerHTML = '<input type="email" name="emails[]" placeholder="exemplo@dominio.com"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+function addTelefoneInput() {
+    const container = document.getElementById('telefones-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'telefone-entry';
+    newEntry.innerHTML = '<input type="tel" name="telefones[]" placeholder="(00) 91234-5678"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+function addDeficienciaInput() {
+    const container = document.getElementById('deficiencias-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'deficiencia-entry';
+    const originalSelect = document.querySelector('[name="deficiencias[]"]');
+    newEntry.innerHTML = `
+        ${originalSelect.outerHTML}
+        <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+        <input type="text" name="observacoes[]" placeholder="Observação">
+        <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    `;
+    container.appendChild(newEntry);
+}
+
+// --- Initial State Setup ---
+document.addEventListener('DOMContentLoaded', () => {
+    const isAlunoCheckbox = document.getElementById('is_aluno');
+    if (isAlunoCheckbox) {
+        toggleSection('aluno_fields', isAlunoCheckbox.checked);
+    }
+    const isServidorCheckbox = document.getElementById('is_servidor');
+    if (isServidorCheckbox) {
+        toggleSection('servidor_fields', isServidorCheckbox.checked);
+    }
+    showServidorSubFields();
+    updatePcdDetailsVisibility();
+    updateMembroDetailsVisibility();
+});
 </script>
 {% endblock %}
