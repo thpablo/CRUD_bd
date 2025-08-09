@@ -31,7 +31,7 @@ def cursos():
                 codigo=codigo,
                 nome=nome,
                 modalidade=modalidade,
-                nivel_de_formacao=nivel_formacao
+                niveldeformacao=nivel_formacao
             )
             db.session.add(new_curso)
             db.session.commit()
@@ -83,7 +83,7 @@ def add_pessoa():
 
             # PessoaLGBT Info
             if request.form.get('nomesocial'):
-                new_pessoa.lgbt_info = PessoaLGBT(nome_social=request.form.get('nomesocial'))
+                new_pessoa.lgbt_info = PessoaLGBT(nomesocial=request.form.get('nomesocial'))
 
             # Contact Info
             for email_form in request.form.getlist('emails[]'):
@@ -127,7 +127,7 @@ def add_pessoa():
             membro_obj = None
             if is_membro:
                 membro_obj = MembroDaEquipe(
-                    regime_de_trabalho=request.form.get('regime_trabalho'),
+                    regimedetrabalho=request.form.get('regime_trabalho'),
                     categoria=request.form.get('categoria_membro')
                 )
                 db.session.add(membro_obj)
@@ -135,8 +135,8 @@ def add_pessoa():
                 if request.form.get('data_inicio_vinculo'):
                     vinculo = PeriodoDeVinculoMembro(
                         id_membro=membro_obj.id_membro,
-                        data_de_inicio=request.form.get('data_inicio_vinculo'),
-                        data_de_fim=request.form.get('data_fim_vinculo') or None
+                        datadeinicio=request.form.get('data_inicio_vinculo'),
+                        datadefim=request.form.get('data_fim_vinculo') or None
                     )
                     db.session.add(vinculo)
 
@@ -159,8 +159,8 @@ def add_pessoa():
 
             if request.form.get('is_servidor'):
                 servidor_obj = Servidor(
-                    tipo_de_contrato=request.form.get('tipo_contrato'),
-                    codigo_departamento_setor=request.form.get('codigo_departamento')
+                    tipodecontrato=request.form.get('tipo_contrato'),
+                    codigodepartamentosetor=request.form.get('codigo_departamento')
                 )
                 new_pessoa.servidor = servidor_obj
 

@@ -11,8 +11,8 @@ class MatriculadoEm(db.Model):
     cpf = Column(String(11), ForeignKey('aluno.cpf'), primary_key=True)
     codigo = Column(Integer, ForeignKey('curso.codigo'), primary_key=True)
     situacao = Column(String(50))
-    data_inicio = Column(Date)
-    data_fim = Column(Date)
+    datainicio = Column(Date)
+    datafim = Column(Date)
     aluno = relationship('Aluno', back_populates='cursos_matriculados')
     curso = relationship('Curso', back_populates='alunos_matriculados')
 
@@ -21,9 +21,9 @@ class EmprestimoMaterial(db.Model):
     __tablename__ = 'emprestimomaterial'
     id_pcd = Column(Integer, ForeignKey('pcd.id_pcd'), primary_key=True)
     id_material = Column(Integer, ForeignKey('tecnologiaemprestavel.id_tecnologia'), primary_key=True)
-    data_emprestimo = Column(Date, primary_key=True)
-    data_devolucao = Column(Date)
-    devolucao_estimada = Column(Date)
+    dataemprestimo = Column(Date, primary_key=True)
+    datadevolucao = Column(Date)
+    devolucaoestimada = Column(Date)
     pcd = relationship('PCD', back_populates='emprestimos_material')
     tecnologia = relationship('TecnologiaEmprestavel', back_populates='emprestimos')
 
@@ -49,8 +49,8 @@ class PrestaAssistencia(db.Model):
     id_pcd = Column(Integer, ForeignKey('pcd.id_pcd'), primary_key=True)
     id_acao = Column(Integer, ForeignKey('acao.id_acao'), primary_key=True)
     id_membro_cain = Column(Integer, ForeignKey('membrodaequipe.id_membro'), primary_key=True)
-    data_inicio = Column(Date, primary_key=True)
-    data_fim = Column(Date)
+    datainicio = Column(Date, primary_key=True)
+    datafim = Column(Date)
     pcd = relationship('PCD', back_populates='assistencias')
     acao = relationship('Acao', back_populates='prestacoes_assistencia')
     membro_equipe = relationship('MembroDaEquipe', back_populates='prestacoes_assistencia')
@@ -87,7 +87,7 @@ class ContatoTelefones(db.Model):
 class PessoaLGBT(db.Model):
     __tablename__ = 'pessoalgbt'
     cpf = Column(String(11), ForeignKey('pessoa.cpf'), primary_key=True)
-    nome_social = Column(String(255), nullable=False)
+    nomesocial = Column(String(255), nullable=False)
     pessoa = relationship('Pessoa', back_populates='lgbt_info')
 
 class DepartamentoSetor(db.Model):
@@ -102,8 +102,8 @@ class DepartamentoSetor(db.Model):
 class Servidor(db.Model):
     __tablename__ = 'servidor'
     cpf = Column(String(11), ForeignKey('pessoa.cpf'), primary_key=True)
-    tipo_de_contrato = Column(String(100), nullable=False)
-    codigo_departamento_setor = Column(Integer, ForeignKey('departamentosetor.codigo'), nullable=False)
+    tipodecontrato = Column(String(100), nullable=False)
+    codigodepartamentosetor = Column(Integer, ForeignKey('departamentosetor.codigo'), nullable=False)
     pessoa = relationship('Pessoa', back_populates='servidor')
     departamento = relationship('DepartamentoSetor', back_populates='servidores')
     docente = relationship('Docente', back_populates='servidor', uselist=False, cascade="all, delete-orphan")
@@ -133,7 +133,7 @@ class Docente(db.Model):
 class MembroDaEquipe(db.Model):
     __tablename__ = 'membrodaequipe'
     id_membro = Column(Integer, primary_key=True)
-    regime_de_trabalho = Column(String(100), nullable=False)
+    regimedetrabalho = Column(String(100), nullable=False)
     categoria = Column(String(100))
     id_coordenador = Column(Integer, ForeignKey('membrodaequipe.id_membro'))
     coordenador = relationship('MembroDaEquipe', remote_side=[id_membro], backref='equipe_coordenada')
@@ -187,23 +187,23 @@ class Aluno(db.Model):
 
 class PeriodoDeVinculoPCD(db.Model):
     __tablename__ = 'periododevinculopcd'
-    data_de_inicio = Column(Date, primary_key=True)
+    datadeinicio = Column(Date, primary_key=True)
     id_pcd = Column(Integer, ForeignKey('pcd.id_pcd'), primary_key=True)
-    data_de_fim = Column(Date)
+    datadefim = Column(Date)
     pcd = relationship('PCD', back_populates='periodos_vinculo')
 
 class PeriodoDeVinculoMembro(db.Model):
     __tablename__ = 'periododevinculomembro'
-    data_de_inicio = Column(Date, primary_key=True)
+    datadeinicio = Column(Date, primary_key=True)
     id_membro = Column(Integer, ForeignKey('membrodaequipe.id_membro'), primary_key=True)
-    data_de_fim = Column(Date)
+    datadefim = Column(Date)
     membro = relationship('MembroDaEquipe', back_populates='periodos_vinculo')
 
 class Bolsista(db.Model):
     __tablename__ = 'bolsista'
     id_bolsista = Column(Integer, ForeignKey('membrodaequipe.id_membro'), primary_key=True)
     salario = Column(MONEY, nullable=False)
-    carga_horaria = Column(Integer)
+    cargahoraria = Column(Integer)
     membro_info = relationship('MembroDaEquipe', back_populates='bolsista')
     producao = relationship('BolsistaProducao', back_populates='bolsista_info', uselist=False, cascade="all, delete-orphan")
     inclusao = relationship('BolsistaInclusao', back_populates='bolsista_info', uselist=False, cascade="all, delete-orphan")
@@ -224,7 +224,7 @@ class BolsistaInclusao(db.Model):
 class Relatorios(db.Model):
     __tablename__ = 'relatorios'
     id_bolsista = Column(Integer, ForeignKey('bolsistainclusao.id_bolsista'), primary_key=True)
-    data_referente = Column(Date, primary_key=True)
+    datareferente = Column(Date, primary_key=True)
     relatorios_semanais = Column(String(1000))
     bolsista = relationship('BolsistaInclusao', back_populates='relatorios')
 
@@ -238,7 +238,7 @@ class Estagiario(db.Model):
     __tablename__ = 'estagiario'
     id_estagiario = Column(Integer, ForeignKey('membrodaequipe.id_membro'), primary_key=True)
     salario = Column(MONEY, nullable=False)
-    carga_horaria = Column(Integer)
+    cargahoraria = Column(Integer)
     membro_info = relationship('MembroDaEquipe', back_populates='estagiario')
 
 class Deficiencia(db.Model):
@@ -257,14 +257,14 @@ class Acao(db.Model):
 class CategoriaTecnologia(db.Model):
     __tablename__ = 'categoriatecnologia'
     id_categoria = Column(Integer, primary_key=True)
-    tipo_categoria = Column(String(50), nullable=False)
+    tipocategoria = Column(String(50), nullable=False)
     tecnologias = relationship('Tecnologia', back_populates='categoria')
 
 class Tecnologia(db.Model):
     __tablename__ = 'tecnologia'
     id_tecnologia = Column(Integer, primary_key=True)
     modelo = Column(String(50), nullable=False)
-    n_serie = Column(Integer, nullable=False)
+    nserie = Column(Integer, nullable=False)
     localizacao = Column(String(100))
     id_categoria = Column(Integer, ForeignKey('categoriatecnologia.id_categoria'), nullable=False)
     categoria = relationship('CategoriaTecnologia', back_populates='tecnologias')
@@ -280,7 +280,7 @@ class TecnologiaEmprestavel(db.Model):
 class CategoriaMaterial(db.Model):
     __tablename__ = 'categoriamaterial'
     id_categoria = Column(Integer, primary_key=True)
-    tipo_material = Column(String(100), nullable=False)
+    tipomaterial = Column(String(100), nullable=False)
     materiais = relationship('MaterialAcessivel', back_populates='categoria')
 
 class MaterialAcessivel(db.Model):
@@ -301,5 +301,5 @@ class Curso(db.Model):
     codigo = Column(Integer, primary_key=True)
     nome = Column(String(50), nullable=False)
     modalidade = Column(String(20), nullable=False)
-    nivel_de_formacao = Column(String(20), nullable=False)
+    niveldeformacao = Column(String(20), nullable=False)
     alunos_matriculados = relationship('MatriculadoEm', back_populates='curso', cascade="all, delete-orphan")
