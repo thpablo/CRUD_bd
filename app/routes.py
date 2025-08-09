@@ -136,6 +136,13 @@ def add_pessoa():
 
     return render_template('add_pessoa.html')
 
+@app.route('/relatorio/pcd')
+def relatorio_pcd():
+    sql_query = get_sql_from_file('relatorio_geral_pcd.sql')
+    result = db.session.execute(text(sql_query))
+    pcds = result.mappings().all()
+    return render_template('relatorio_pcd.html', pcds=pcds)
+
 @app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
 def edit_pessoa(cpf):
     pessoa = Pessoa.query.get_or_404(cpf)
