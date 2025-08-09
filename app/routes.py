@@ -1,4 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash
+from sqlalchemy import text
 from . import app, db
 from .models import (
     Pessoa, Curso, DepartamentoSetor, Cargo, Deficiencia, PessoaLGBT,
@@ -13,7 +14,9 @@ def index():
 
 @app.route('/pessoas')
 def pessoas():
-    all_pessoas = Pessoa.query.all()
+    sql = text("SELECT * FROM pessoa ORDER BY nome")
+    result = db.session.execute(sql)
+    all_pessoas = result.mappings().all()
     return render_template('pessoas.html', pessoas=all_pessoas)
 
 @app.route('/cursos', methods=['GET', 'POST'])
@@ -40,8 +43,31 @@ def cursos():
             flash('Curso added successfully!', 'success')
         return redirect(url_for('cursos'))
 
-    all_cursos = Curso.query.all()
+    sql = text("SELECT * FROM curso ORDER BY nome")
+    result = db.session.execute(sql)
+    all_cursos = result.mappings().all()
     return render_template('cursos.html', cursos=all_cursos)
+
+@app.route('/curso/<int:codigo_curso>')
+def alunos_por_curso(codigo_curso):
+    # First, get course details
+    sql_curso = text("SELECT * FROM curso WHERE codigo = :codigo")
+    result_curso = db.session.execute(sql_curso, {'codigo': codigo_curso}).first()
+    curso = result_curso.mappings() if result_curso else None
+
+    # Now, get the students with a JOIN
+    sql_alunos = text("""
+        SELECT p.nome, a.matricula
+        FROM pessoa p
+        JOIN aluno a ON p.cpf = a.cpf
+        JOIN matriculadoem m ON a.cpf = m.cpf
+        WHERE m.codigo = :codigo
+        ORDER BY p.nome
+    """)
+    result_alunos = db.session.execute(sql_alunos, {'codigo': codigo_curso})
+    alunos = result_alunos.mappings().all()
+
+    return render_template('alunos_por_curso.html', curso=curso, alunos=alunos)
 
 @app.route('/departamentos', methods=['GET', 'POST'])
 def departamentos():
@@ -304,7 +330,9 @@ def assign_role():
         if not search_cpf.isdigit() or len(search_cpf) != 11:
             flash('CPF de busca inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
         else:
-            pessoa = Pessoa.query.get(search_cpf)
+            sql = text("SELECT * FROM pessoa WHERE cpf = :cpf")
+            result = db.session.execute(sql, {'cpf': search_cpf}).first()
+            pessoa = result.mappings() if result else None
             if not pessoa:
                 flash('Pessoa com o CPF informado não encontrada.', 'error')
 
