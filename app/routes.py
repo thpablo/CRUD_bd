@@ -72,27 +72,47 @@ def departamentos():
 def add_pessoa():
     if request.method == 'POST':
         try:
-            # Basic Pessoa Info
             cpf_form = request.form.get('cpf')
             if not cpf_form or Pessoa.query.get(cpf_form):
-                flash('CPF is required and must be unique.', 'error')
+                flash('CPF é obrigatório e deve ser único.', 'error')
                 return redirect(url_for('add_pessoa'))
 
             new_pessoa = Pessoa(cpf=cpf_form, nome=request.form.get('nome'))
             db.session.add(new_pessoa)
 
-            # PessoaLGBT Info
             if request.form.get('nomesocial'):
                 new_pessoa.lgbt_info = PessoaLGBT(nomesocial=request.form.get('nomesocial'))
 
-            # Contact Info
             for email_form in request.form.getlist('emails[]'):
                 if email_form:
                     new_pessoa.emails.append(ContatoEmails(email=email_form))
+
             for telefone_form in request.form.getlist('telefones[]'):
                 if telefone_form:
                     new_pessoa.telefones.append(ContatoTelefones(telefone=telefone_form))
 
+            db.session.commit()
+            flash('Pessoa adicionada com sucesso! Agora você pode atribuir papéis a ela.', 'success')
+            return redirect(url_for('pessoas'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ocorreu um erro ao adicionar a pessoa: {e}', 'error')
+            print(e)
+
+    return render_template('add_pessoa.html')
+
+@app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
+def edit_pessoa(cpf):
+    return f"Edit Pessoa {cpf} - Not Implemented"
+
+@app.route('/assign_role', methods=['GET', 'POST'])
+def assign_role():
+    if request.method == 'POST':
+        cpf = request.form.get('cpf')
+        pessoa = Pessoa.query.get_or_404(cpf)
+
+        try:
             # --- Flags and Shared Objects ---
             is_pcd = any([
                 request.form.get('is_aluno_pcd'),
@@ -127,42 +147,42 @@ def add_pessoa():
             membro_obj = None
             if is_membro:
                 membro_obj = MembroDaEquipe(
-                    regimedetrabalho=request.form.get('regime_trabalho'),
+                    regimedetrabalho=request.form.get('regimedetrabalho'),
                     categoria=request.form.get('categoria_membro')
                 )
                 db.session.add(membro_obj)
                 db.session.flush()
-                if request.form.get('data_inicio_vinculo'):
+                if request.form.get('datadeinicio'):
                     vinculo = PeriodoDeVinculoMembro(
                         id_membro=membro_obj.id_membro,
-                        datadeinicio=request.form.get('data_inicio_vinculo'),
-                        datadefim=request.form.get('data_fim_vinculo') or None
+                        datadeinicio=request.form.get('datadeinicio'),
+                        datadefim=request.form.get('datadefim') or None
                     )
                     db.session.add(vinculo)
 
             # --- Roles ---
-            if request.form.get('is_aluno'):
+            if request.form.get('is_aluno') and not pessoa.aluno:
                 aluno_obj = Aluno(
                     matricula=request.form.get('matricula'),
                     id_pcd=pcd_obj.id_pcd if pcd_obj and request.form.get('is_aluno_pcd') else None,
                     id_membro=membro_obj.id_membro if membro_obj and request.form.get('is_aluno_membro') else None
                 )
-                new_pessoa.aluno = aluno_obj
+                pessoa.aluno = aluno_obj
 
                 curso_codigo = request.form.get('codigo_curso')
                 if curso_codigo:
                     matricula_rel = MatriculadoEm(
-                        cpf=new_pessoa.cpf,
+                        cpf=pessoa.cpf,
                         codigo=curso_codigo
                     )
                     db.session.add(matricula_rel)
 
-            if request.form.get('is_servidor'):
+            if request.form.get('is_servidor') and not pessoa.servidor:
                 servidor_obj = Servidor(
-                    tipodecontrato=request.form.get('tipo_contrato'),
+                    tipodecontrato=request.form.get('tipodecontrato'),
                     codigodepartamentosetor=request.form.get('codigo_departamento')
                 )
-                new_pessoa.servidor = servidor_obj
+                pessoa.servidor = servidor_obj
 
                 tipo_servidor = request.form.get('tipo_servidor')
                 if tipo_servidor == 'docente':
@@ -187,21 +207,25 @@ def add_pessoa():
                     servidor_obj.terceirizado = terceirizado_obj
 
             db.session.commit()
-            flash('Pessoa adicionada com sucesso!', 'success')
+            flash(f'Papéis atribuídos com sucesso para {pessoa.nome}!', 'success')
             return redirect(url_for('pessoas'))
 
         except Exception as e:
             db.session.rollback()
-            flash(f'Ocorreu um erro ao adicionar a pessoa: {e}', 'error')
+            flash(f'Ocorreu um erro ao atribuir papéis: {e}', 'error')
             print(e)
+            return redirect(url_for('assign_role', search_cpf=cpf))
 
     # --- GET Request Handling ---
+    pessoa = None
+    search_cpf = request.args.get('search_cpf')
+    if search_cpf:
+        pessoa = Pessoa.query.get(search_cpf)
+        if not pessoa:
+            flash('Pessoa com o CPF informado não encontrada.', 'error')
+
     cursos = Curso.query.all()
     departamentos = DepartamentoSetor.query.all()
     cargos = Cargo.query.all()
     deficiencias = Deficiencia.query.all()
-    return render_template('add_pessoa.html', cursos=cursos, departamentos=departamentos, cargos=cargos, deficiencias=deficiencias)
-
-@app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
-def edit_pessoa(cpf):
-    return f"Edit Pessoa {cpf} - Not Implemented"
+    return render_template('assign_role.html', pessoa=pessoa, cursos=cursos, departamentos=departamentos, cargos=cargos, deficiencias=deficiencias)

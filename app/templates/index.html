@@ -7,8 +7,9 @@
   <p>Este sistema foi desenvolvido para gerenciar as informações e atividades da Coordenadoria de Acessibilidade e Inclusão (CAIN) da Universidade Federal de Ouro Preto.</p>
   <p>Utilize a navegação acima para acessar as diferentes seções:</p>
   <ul>
-    <li><strong><a href="{{ url_for('pessoas') }}">Pessoas</a>:</strong> Visualize e gerencie os dados de alunos, servidores e outros indivíduos no sistema.</li>
-    <li><strong><a href="{{ url_for('add_pessoa') }}">Adicionar Pessoa</a>:</strong> Utilize nosso formulário completo para adicionar novos indivíduos e seus vínculos com a universidade.</li>
+    <li><strong><a href="{{ url_for('pessoas') }}">Pessoas</a>:</strong> Visualize e gerencie os dados de todos os indivíduos no sistema.</li>
+    <li><strong><a href="{{ url_for('add_pessoa') }}">Adicionar Pessoa</a>:</strong> Cadastre as informações básicas de um novo indivíduo.</li>
+    <li><strong><a href="{{ url_for('assign_role') }}">Atribuir Papel</a>:</strong> Adicione os papéis de Aluno ou Servidor a uma pessoa já cadastrada.</li>
     <li><strong><a href="{{ url_for('cursos') }}">Cursos</a>:</strong> Gerencie os cursos oferecidos.</li>
     <li><strong><a href="{{ url_for('departamentos') }}">Departamentos</a>:</strong> Gerencie os departamentos e setores da universidade.</li>
   </ul>
