@@ -9,7 +9,7 @@
     <h2>Buscar Pessoa</h2>
     <form action="{{ url_for('assign_role') }}" method="get">
         <label for="search_cpf">Buscar por CPF:</label>
-        <input type="text" id="search_cpf" name="search_cpf" value="{{ request.args.get('search_cpf', '') }}">
+        <input type="text" id="search_cpf" name="search_cpf" value="{{ request.args.get('search_cpf', '') }}" maxlength="11" pattern="[0-9]{11}" title="Digite os 11 dígitos do CPF, sem pontos ou traços.">
         <button type="submit">Buscar</button>
     </form>
 </div>

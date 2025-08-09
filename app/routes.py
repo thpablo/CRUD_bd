@@ -22,10 +22,12 @@ def cursos():
         codigo = request.form.get('codigo')
         nome = request.form.get('nome')
         modalidade = request.form.get('modalidade')
-        nivel_formacao = request.form.get('nivel_formacao')
+        nivel_formacao = request.form.get('niveldeformacao')
 
         if not all([codigo, nome]):
-            flash('Código and Nome are required fields.', 'error')
+            flash('Código e Nome são campos obrigatórios.', 'error')
+        elif not codigo.isdigit():
+            flash('Código deve ser um valor numérico.', 'error')
         else:
             new_curso = Curso(
                 codigo=codigo,
@@ -51,7 +53,9 @@ def departamentos():
         email = request.form.get('email')
 
         if not all([codigo, nome]):
-            flash('Código and Nome are required fields.', 'error')
+            flash('Código e Nome são campos obrigatórios.', 'error')
+        elif not codigo.isdigit():
+            flash('Código deve ser um valor numérico.', 'error')
         else:
             new_departamento = DepartamentoSetor(
                 codigo=codigo,
@@ -73,8 +77,12 @@ def add_pessoa():
     if request.method == 'POST':
         try:
             cpf_form = request.form.get('cpf')
-            if not cpf_form or Pessoa.query.get(cpf_form):
-                flash('CPF é obrigatório e deve ser único.', 'error')
+            if not cpf_form or not cpf_form.isdigit() or len(cpf_form) != 11:
+                flash('CPF inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
+                return redirect(url_for('add_pessoa'))
+
+            if Pessoa.query.get(cpf_form):
+                flash('CPF já cadastrado.', 'error')
                 return redirect(url_for('add_pessoa'))
 
             new_pessoa = Pessoa(cpf=cpf_form, nome=request.form.get('nome'))
@@ -220,9 +228,12 @@ def assign_role():
     pessoa = None
     search_cpf = request.args.get('search_cpf')
     if search_cpf:
-        pessoa = Pessoa.query.get(search_cpf)
-        if not pessoa:
-            flash('Pessoa com o CPF informado não encontrada.', 'error')
+        if not search_cpf.isdigit() or len(search_cpf) != 11:
+            flash('CPF de busca inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
+        else:
+            pessoa = Pessoa.query.get(search_cpf)
+            if not pessoa:
+                flash('Pessoa com o CPF informado não encontrada.', 'error')
 
     cursos = Curso.query.all()
     departamentos = DepartamentoSetor.query.all()

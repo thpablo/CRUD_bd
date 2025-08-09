@@ -12,7 +12,7 @@
         <h2>Informações Básicas</h2>
         <div>
             <label for="cpf">CPF:</label>
-            <input type="text" id="cpf" name="cpf" required>
+            <input type="text" id="cpf" name="cpf" required maxlength="11" pattern="[0-9]{11}" title="Digite os 11 dígitos do CPF, sem pontos ou traços.">
         </div>
         <div>
             <label for="nome">Nome Completo:</label>
