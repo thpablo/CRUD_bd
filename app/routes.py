@@ -1,3 +1,4 @@
+import os
 from flask import render_template, request, redirect, url_for, flash
 from sqlalchemy import text
 from . import app, db
@@ -8,14 +9,20 @@ from .models import (
     MembroDaEquipe, PeriodoDeVinculoMembro, MatriculadoEm
 )
 
+def get_sql_from_file(filename):
+    """Reads a SQL query from a file in the app/sql directory."""
+    sql_dir = os.path.join(os.path.dirname(__file__), 'sql')
+    with open(os.path.join(sql_dir, filename), 'r') as f:
+        return f.read()
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/pessoas')
 def pessoas():
-    sql = text("SELECT * FROM pessoa ORDER BY nome")
-    result = db.session.execute(sql)
+    sql_query = get_sql_from_file('select_all_pessoas.sql')
+    result = db.session.execute(text(sql_query))
     all_pessoas = result.mappings().all()
     return render_template('pessoas.html', pessoas=all_pessoas)
 
@@ -43,8 +50,8 @@ def cursos():
             flash('Curso added successfully!', 'success')
         return redirect(url_for('cursos'))
 
-    sql = text("SELECT * FROM curso ORDER BY nome")
-    result = db.session.execute(sql)
+    sql_query = get_sql_from_file('select_all_cursos.sql')
+    result = db.session.execute(text(sql_query))
     all_cursos = result.mappings().all()
     return render_template('cursos.html', cursos=all_cursos)
 
@@ -56,15 +63,8 @@ def alunos_por_curso(codigo_curso):
     curso = result_curso.mappings() if result_curso else None
 
     # Now, get the students with a JOIN
-    sql_alunos = text("""
-        SELECT p.nome, a.matricula
-        FROM pessoa p
-        JOIN aluno a ON p.cpf = a.cpf
-        JOIN matriculadoem m ON a.cpf = m.cpf
-        WHERE m.codigo = :codigo
-        ORDER BY p.nome
-    """)
-    result_alunos = db.session.execute(sql_alunos, {'codigo': codigo_curso})
+    sql_alunos_query = get_sql_from_file('select_alunos_by_curso.sql')
+    result_alunos = db.session.execute(text(sql_alunos_query), {'codigo': codigo_curso})
     alunos = result_alunos.mappings().all()
 
     return render_template('alunos_por_curso.html', curso=curso, alunos=alunos)
@@ -330,8 +330,8 @@ def assign_role():
         if not search_cpf.isdigit() or len(search_cpf) != 11:
             flash('CPF de busca inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
         else:
-            sql = text("SELECT * FROM pessoa WHERE cpf = :cpf")
-            result = db.session.execute(sql, {'cpf': search_cpf}).first()
+            sql_query = get_sql_from_file('select_pessoa_by_cpf.sql')
+            result = db.session.execute(text(sql_query), {'cpf': search_cpf}).first()
             pessoa = result.mappings() if result else None
             if not pessoa:
                 flash('Pessoa com o CPF informado não encontrada.', 'error')
