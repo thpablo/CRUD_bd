@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Pessoa{% endblock %}
+
+{% block content %}
+<h1>Editar Pessoa</h1>
+
+{% if pessoa %}
+<form action="{{ url_for('edit_pessoa', cpf=pessoa.cpf) }}" method="post">
+
+    <div class="form-section">
+        <h2>Informações Básicas</h2>
+        <div>
+            <label for="cpf">CPF:</label>
+            <input type="text" id="cpf" name="cpf" value="{{ pessoa.cpf }}" readonly>
+        </div>
+        <div>
+            <label for="nome">Nome Completo:</label>
+            <input type="text" id="nome" name="nome" value="{{ pessoa.nome }}" required>
+        </div>
+        <div>
+            <label for="nomesocial">Nome Social (Opcional):</label>
+            <input type="text" id="nomesocial" name="nomesocial" value="{{ pessoa.lgbt_info.nomesocial if pessoa.lgbt_info else '' }}">
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h2>Contatos</h2>
+        <div id="emails-container">
+            <label>E-mails:</label>
+            {% for email in pessoa.emails %}
+            <div class="email-entry">
+                <input type="email" name="emails[]" value="{{ email.email }}" placeholder="exemplo@dominio.com">
+                <button type="button" onclick="this.parentElement.remove()">Remover</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addEmailInput()">Adicionar Outro E-mail</button>
+
+        <div id="telefones-container" style="margin-top: 20px;">
+            <label>Telefones:</label>
+            {% for telefone in pessoa.telefones %}
+            <div class="telefone-entry">
+                <input type="tel" name="telefones[]" value="{{ telefone.telefone }}" placeholder="(00) 91234-5678">
+                <button type="button" onclick="this.parentElement.remove()">Remover</button>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addTelefoneInput()">Adicionar Outro Telefone</button>
+    </div>
+
+    <hr>
+
+    <div class="form-section">
+        <h2>Vínculos com a Instituição</h2>
+        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.aluno %}checked{% endif %}> É Aluno?</label>
+        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.servidor %}checked{% endif %}> É Servidor?</label>
+    </div>
+
+    <!-- Seção Aluno -->
+    <div id="aluno_fields" class="dynamic-section" style="display: {% if pessoa.aluno %'block'{% else %}'none'{% endif %};">
+        <h3>Detalhes do Aluno</h3>
+        <label><input type="checkbox" id="is_aluno_pcd" name="is_aluno_pcd" class="pcd-checkbox" {% if pessoa.aluno and pessoa.aluno.pcd %}checked{% endif %}> É PCD?</label>
+        <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox" {% if pessoa.aluno and pessoa.aluno.membro_equipe %}checked{% endif %}> É Membro da Equipe CAIN?</label>
+        <div>
+            <label for="matricula">Matrícula:</label>
+            <input type="text" id="matricula" name="matricula" value="{{ pessoa.aluno.matricula if pessoa.aluno else '' }}">
+        </div>
+        <div>
+            <label for="codigo_curso">Curso:</label>
+            <select id="codigo_curso" name="codigo_curso">
+                {% set curso_atual = pessoa.aluno.cursos_matriculados[0].codigo if pessoa.aluno and pessoa.aluno.cursos_matriculados else None %}
+                {% for curso in cursos %}<option value="{{ curso.codigo }}" {% if curso.codigo == curso_atual %}selected{% endif %}>{{ curso.nome }}</option>{% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Seção Servidor -->
+    <div id="servidor_fields" class="dynamic-section" style="display: {% if pessoa.servidor %}'block'{% else %}'none'{% endif %};">
+        <h3>Detalhes do Servidor</h3>
+        <div>
+            <label for="tipodecontrato">Tipo de Contrato:</label>
+            <input type="text" id="tipodecontrato" name="tipodecontrato" value="{{ pessoa.servidor.tipodecontrato if pessoa.servidor else '' }}">
+        </div>
+        <div>
+            <label for="codigo_departamento">Departamento:</label>
+            <select id="codigo_departamento" name="codigo_departamento">
+                {% for departamento in departamentos %}<option value="{{ departamento.codigo }}" {% if pessoa.servidor and pessoa.servidor.codigodepartamentosetor == departamento.codigo %}selected{% endif %}>{{ departamento.nome }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            {% set tipo_servidor_atual = '' %}
+            {% if pessoa.servidor and pessoa.servidor.docente %} {% set tipo_servidor_atual = 'docente' %}
+            {% elif pessoa.servidor and pessoa.servidor.tecnico %} {% set tipo_servidor_atual = 'tecnico' %}
+            {% elif pessoa.servidor and pessoa.servidor.terceirizado %} {% set tipo_servidor_atual = 'terceirizado' %}
+            {% endif %}
+            <label for="tipo_servidor">Tipo de Servidor:</label>
+            <select id="tipo_servidor" name="tipo_servidor" onchange="showServidorSubFields()">
+                <option value="" {% if not tipo_servidor_atual %}selected{% endif %}>Selecione...</option>
+                <option value="docente" {% if tipo_servidor_atual == 'docente' %}selected{% endif %}>Docente</option>
+                <option value="tecnico" {% if tipo_servidor_atual == 'tecnico' %}selected{% endif %}>Técnico Administrativo</option>
+                <option value="terceirizado" {% if tipo_servidor_atual == 'terceirizado' %}selected{% endif %}>Terceirizado</option>
+            </select>
+        </div>
+
+        <div id="docente_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Docente</h4>
+            <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
+            <div>
+                <label for="siape_docente">SIAPE:</label>
+                <input type="text" id="siape_docente" name="siape_docente" value="{{ pessoa.servidor.docente.siape if pessoa.servidor and pessoa.servidor.docente else '' }}">
+            </div>
+        </div>
+
+        <div id="tecnico_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Técnico Administrativo</h4>
+            <label><input type="checkbox" id="is_tecnico_pcd" name="is_tecnico_pcd" class="pcd-checkbox" {% if pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.pcd %}checked{% endif %}> É PCD?</label>
+            <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox" {% if pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.membro_equipe %}checked{% endif %}> É Membro da Equipe CAIN?</label>
+            <div>
+                <label for="siape_tecnico">SIAPE:</label>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" value="{{ pessoa.servidor.tecnico.siape if pessoa.servidor and pessoa.servidor.tecnico else '' }}">
+            </div>
+            <div>
+                <label for="id_cargo_tecnico">Cargo:</label>
+                <select id="id_cargo_tecnico" name="id_cargo_tecnico">
+                    {% set cargo_atual = pessoa.servidor.tecnico.id_cargo if pessoa.servidor and pessoa.servidor.tecnico else None %}
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}" {% if cargo.id_cargo == cargo_atual %}selected{% endif %}>{{ cargo.nome }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div id="terceirizado_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Terceirizado</h4>
+            <label><input type="checkbox" id="is_terceirizado_membro" name="is_terceirizado_membro" class="membro-checkbox" checked disabled> É Membro da Equipe CAIN (Obrigatório)</label>
+            <div>
+                <label for="id_cargo_terceirizado">Cargo:</label>
+                <select id="id_cargo_terceirizado" name="id_cargo_terceirizado">
+                    {% set cargo_atual = pessoa.servidor.terceirizado.id_cargo if pessoa.servidor and pessoa.servidor.terceirizado else None %}
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}" {% if cargo.id_cargo == cargo_atual %}selected{% endif %}>{{ cargo.nome }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção Detalhes PCD -->
+    <div id="pcd_details" class="dynamic-section" style="display:none;">
+        <h3>Detalhes da Deficiência</h3>
+        <div id="deficiencias-container">
+            <!-- Logic to pre-populate this will be complex, maybe handled differently -->
+        </div>
+        <button type="button" onclick="addDeficienciaInput()">Adicionar Outra Deficiência</button>
+    </div>
+
+    <!-- Seção Detalhes Membro CAIN -->
+    <div id="membro_details" class="dynamic-section" style="display:none;">
+        <!-- Logic to pre-populate this will be complex -->
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button type="submit">Salvar Alterações</button>
+    </div>
+</form>
+{% else %}
+<p>Pessoa não encontrada. Por favor, volte para a <a href="{{ url_for('pessoas') }}">lista de pessoas</a> e tente novamente.</p>
+{% endif %}
+
+<script>
+// (JavaScript from assign_role.html would go here, adapted for editing)
+// --- Event Listeners ---
+document.getElementById('is_aluno')?.addEventListener('change', (e) => toggleSection('aluno_fields', e.target.checked));
+document.getElementById('is_servidor')?.addEventListener('change', (e) => toggleSection('servidor_fields', e.target.checked));
+// ... and so on
+</script>
+{% endblock %}

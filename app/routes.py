@@ -112,7 +112,80 @@ def add_pessoa():
 
 @app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
 def edit_pessoa(cpf):
-    return f"Edit Pessoa {cpf} - Not Implemented"
+    pessoa = Pessoa.query.get_or_404(cpf)
+
+    if request.method == 'POST':
+        try:
+            # Update basic info
+            pessoa.nome = request.form.get('nome')
+
+            # Update LGBT Info
+            nomesocial = request.form.get('nomesocial')
+            if nomesocial and not pessoa.lgbt_info:
+                pessoa.lgbt_info = PessoaLGBT(nomesocial=nomesocial)
+            elif nomesocial and pessoa.lgbt_info:
+                pessoa.lgbt_info.nomesocial = nomesocial
+            elif not nomesocial and pessoa.lgbt_info:
+                db.session.delete(pessoa.lgbt_info)
+
+            # Update Contacts (simple delete and re-add strategy)
+            for email in pessoa.emails:
+                db.session.delete(email)
+            for telefone in pessoa.telefones:
+                db.session.delete(telefone)
+
+            for email_form in request.form.getlist('emails[]'):
+                if email_form:
+                    pessoa.emails.append(ContatoEmails(email=email_form))
+            for telefone_form in request.form.getlist('telefones[]'):
+                if telefone_form:
+                    pessoa.telefones.append(ContatoTelefones(telefone=telefone_form))
+
+            # --- Handle Roles (Aluno, Servidor) ---
+            # This logic can get very complex. It needs to handle creation, update, and deletion.
+
+            # Handle Aluno Role
+            is_aluno_form = request.form.get('is_aluno')
+            if is_aluno_form and not pessoa.aluno:
+                # Create Aluno role
+                aluno_obj = Aluno(matricula=request.form.get('matricula'))
+                pessoa.aluno = aluno_obj
+                # Note: This doesn't handle PCD/Membro status yet. That's a further complexity.
+            elif is_aluno_form and pessoa.aluno:
+                # Update Aluno role
+                pessoa.aluno.matricula = request.form.get('matricula')
+            elif not is_aluno_form and pessoa.aluno:
+                # Delete Aluno role
+                db.session.delete(pessoa.aluno)
+
+            # Handle Servidor Role (simplified for now)
+            is_servidor_form = request.form.get('is_servidor')
+            if is_servidor_form and not pessoa.servidor:
+                # Create Servidor role - logic would be similar to assign_role
+                flash('A criação de novos papéis de servidor deve ser feita na tela "Atribuir Papel".', 'warning')
+            elif not is_servidor_form and pessoa.servidor:
+                # Delete Servidor role
+                db.session.delete(pessoa.servidor)
+
+            # A full implementation would need to handle all sub-roles (Docente, etc.)
+            # and PCD/Membro statuses, which is extremely complex for a single update function.
+            # The current implementation is a simplified version focusing on basic updates.
+
+            db.session.commit()
+            flash('Pessoa atualizada com sucesso!', 'success')
+            return redirect(url_for('pessoas'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Ocorreu um erro ao atualizar a pessoa: {e}', 'error')
+            print(e)
+
+    # GET Request
+    cursos = Curso.query.all()
+    departamentos = DepartamentoSetor.query.all()
+    cargos = Cargo.query.all()
+    deficiencias = Deficiencia.query.all()
+    return render_template('edit_pessoa.html', pessoa=pessoa, cursos=cursos, departamentos=departamentos, cargos=cargos, deficiencias=deficiencias)
 
 @app.route('/assign_role', methods=['GET', 'POST'])
 def assign_role():
