@@ -5,7 +5,10 @@
 -- Modifiquei AUTO_INCREMENT (MYSQL) PARA GENERATED ALWAYS AS IDENTITY (POSTGRES)
 -- Coloquei relacao departamentosetor antes de servidor
 -- Algumas outras observacoes coloquei em comentarios no codigo do lado dos atributos
--- Rearraj
+
+
+-- Telas individuais para diferentes entidades -  crio Pessoa e finaliza. Depois quando vou cadastrar o servidor eu busco as pessoas cadastradas anteriormente. mesma coisa pro aluno
+
 
 -- Entidade Pessoa
 CREATE TABLE Pessoa (
@@ -36,13 +39,13 @@ CREATE TABLE PessoaLGBT (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE CASCADE
 );
 
--- Entidade Setor
+-- Entidade DepartamentoSetor
 CREATE TABLE DepartamentoSetor(
 	CODIGO INT PRIMARY KEY,
 	Nome VARCHAR(60) NOT NULL,
-	Localizacao VARCHAR(100) NOT NULL,
-	Telefone VARCHAR(20) NOT NULL,
-	Email VARCHAR (100) NOT NULL
+	Localizacao VARCHAR(100),
+	Telefone VARCHAR(20),
+	Email VARCHAR (100)
 );
 
 
@@ -50,14 +53,17 @@ CREATE TABLE DepartamentoSetor(
 CREATE TABLE Servidor (
     CPF VARCHAR(11) PRIMARY KEY,
     TipoDeContrato VARCHAR(100) NOT NULL,
-    CodigoDepartamento INT NOT NULL,
+    CodigoDepartamentoSetor INT NOT NULL,
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE RESTRICT,
-    FOREIGN KEY (CodigoDepartamento) REFERENCES DepartamentoSetor(Codigo) ON DELETE RESTRICT
+    FOREIGN KEY (CodigoDepartamentoSetor) REFERENCES DepartamentoSetor(CODIGO) ON DELETE RESTRICT
+
+    -- trigger para buscar o CPF Da pessoa em Servidor e verificar se ela é PCD.
+    -- se for, vai pegar o ID_PCD do PCD e colocar na tabela Aluno
 );
 
 -- Entidade PCD
 CREATE TABLE PCD (
-	ID_PCD INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY 
+	ID_PCD INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY
 );
 
 
@@ -73,7 +79,6 @@ CREATE TABLE Docente (
 -- Entidade Membro da Equipe
 CREATE TABLE MembroDaEquipe(
     ID_MEMBRO INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    Categoria VARCHAR(50),
     RegimeDeTrabalho VARCHAR(100) NOT NULL,
     ID_COORDENADOR INT,
     FOREIGN KEY (ID_COORDENADOR) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT
@@ -117,15 +122,26 @@ CREATE TABLE Aluno (
     FOREIGN KEY (CPF) REFERENCES Pessoa(CPF) ON DELETE RESTRICT,
     FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
     FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT
+
+    -- trigger para buscar o CPF Da pessoa em Servidor e verificar se ela é PCD.
+    -- se for, vai pegar o ID_PCD do PCD e colocar na tabela Aluno
 );
 
 -- Atributo Período de Vínculo Multivalorado de Membro da Equipe
-CREATE TABLE PeriodoDeVinculo(
+CREATE TABLE PeriodoDeVinculoPCD(
     DataDeInicio DATE NOT NULL,
-    DataDeFim DATE NOT NULL,
+    DataDeFim DATE,
+    ID_PCD INT NOT NULL,
+    FOREIGN KEY (ID_PCD) REFERENCES PCD(ID_PCD) ON DELETE RESTRICT,
+    CONSTRAINT ID_PERIODO_DE_VINCULO PRIMARY KEY (ID_PCD, DataDeInicio)
+);
+
+CREATE TABLE PeriodoDeVinculoMembro(
+    DataDeInicio DATE NOT NULL,
+    DataDeFim DATE,
     ID_MEMBRO INT NOT NULL,
     FOREIGN KEY (ID_MEMBRO) REFERENCES MembroDaEquipe(ID_MEMBRO) ON DELETE RESTRICT,
-    CONSTRAINT ID_PERIODO_DE_VINCULO PRIMARY KEY (ID_MEMBRO, DataDeInicio, DataDeFim)
+    CONSTRAINT ID_PERIODO_DE_VINCULO PRIMARY KEY (ID_MEMBRO, DataDeInicio)
 );
 
 -- Entidade Bolsista
