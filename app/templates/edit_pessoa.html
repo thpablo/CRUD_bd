@@ -179,12 +179,16 @@ function toggleSection(sectionId, isVisible) {
 }
 
 function updatePcdDetailsVisibility() {
-    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => cb.checked);
+    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => {
+        return cb.offsetParent !== null && cb.checked;
+    });
     toggleSection('pcd_details', isAnyPcd);
 }
 
 function updateMembroDetailsVisibility() {
-    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => cb.checked);
+    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => {
+        return cb.offsetParent !== null && cb.checked;
+    });
     toggleSection('membro_details', isAnyMembro);
 }
 
