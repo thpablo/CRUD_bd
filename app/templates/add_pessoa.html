@@ -69,8 +69,8 @@
     <div id="servidor_fields" class="dynamic-section" style="display:none;">
         <h3>Detalhes do Servidor</h3>
         <div>
-            <label for="tipo_contrato">Tipo de Contrato:</label>
-            <input type="text" id="tipo_contrato" name="tipo_contrato">
+            <label for="tipodecontrato">Tipo de Contrato:</label>
+            <input type="text" id="tipodecontrato" name="tipodecontrato">
         </div>
         <div>
             <label for="codigo_departamento">Departamento:</label>
@@ -108,7 +108,7 @@
             <div>
                 <label for="id_cargo_tecnico">Cargo:</label>
                 <select id="id_cargo_tecnico" name="id_cargo_tecnico">
-                    {% for cargo in cargos %}<option value="{{ cargo.id }}">{{ cargo.nome }}</option>{% endfor %}
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}">{{ cargo.nome }}</option>{% endfor %}
                 </select>
             </div>
         </div>
@@ -119,7 +119,7 @@
             <div>
                 <label for="id_cargo_terceirizado">Cargo:</label>
                 <select id="id_cargo_terceirizado" name="id_cargo_terceirizado">
-                    {% for cargo in cargos %}<option value="{{ cargo.id }}">{{ cargo.nome }}</option>{% endfor %}
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}">{{ cargo.nome }}</option>{% endfor %}
                 </select>
             </div>
         </div>
@@ -132,7 +132,7 @@
             <div class="deficiencia-entry">
                 <select name="deficiencias[]" title="Categoria da Deficiência">
                     <option value="">Selecione a Categoria</option>
-                    {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id }}">{{ deficiencia.categoria }}</option>{% endfor %}
+                    {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id_deficiencia }}">{{ deficiencia.categoria }}</option>{% endfor %}
                 </select>
                 <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
                 <input type="text" name="observacoes[]" placeholder="Observação">
@@ -145,8 +145,8 @@
     <div id="membro_details" class="dynamic-section" style="display:none;">
         <h3>Detalhes do Membro da Equipe CAIN</h3>
         <div>
-            <label for="regime_trabalho">Regime de Trabalho:</label>
-            <input type="text" id="regime_trabalho" name="regime_trabalho" placeholder="Presencial, a distância ou híbrido">
+            <label for="regimedetrabalho">Regime de Trabalho:</label>
+            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido">
         </div>
         <div>
             <label for="categoria_membro">Categoria:</label>
@@ -154,12 +154,12 @@
         </div>
         <h4>Período de Vínculo</h4>
         <div>
-            <label for="data_inicio_vinculo">Data de Início:</label>
-            <input type="date" id="data_inicio_vinculo" name="data_inicio_vinculo">
+            <label for="datadeinicio">Data de Início:</label>
+            <input type="date" id="datadeinicio" name="datadeinicio">
         </div>
         <div>
-            <label for="data_fim_vinculo">Data de Término:</label>
-            <input type="date" id="data_fim_vinculo" name="data_fim_vinculo">
+            <label for="datadefim">Data de Término:</label>
+            <input type="date" id="datadefim" name="datadefim">
         </div>
     </div>
 
