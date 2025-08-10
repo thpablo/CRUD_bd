@@ -143,6 +143,22 @@ def relatorio_pcd():
     pcds = result.mappings().all()
     return render_template('relatorio_pcd.html', pcds=pcds)
 
+@app.route('/equipe')
+def equipe_info():
+    # Query for all students info
+    sql_alunos = get_sql_from_file('select_all_alunos_info.sql')
+    alunos = db.session.execute(text(sql_alunos)).mappings().all()
+
+    # Query for all team members info
+    sql_membros = get_sql_from_file('select_all_membros_equipe_info.sql')
+    membros_equipe = db.session.execute(text(sql_membros)).mappings().all()
+
+    # Query for all scholarship students info
+    sql_bolsistas = get_sql_from_file('select_all_bolsistas_info.sql')
+    bolsistas = db.session.execute(text(sql_bolsistas)).mappings().all()
+
+    return render_template('equipe_info.html', alunos=alunos, membros_equipe=membros_equipe, bolsistas=bolsistas)
+
 @app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
 def edit_pessoa(cpf):
     pessoa = Pessoa.query.get_or_404(cpf)
