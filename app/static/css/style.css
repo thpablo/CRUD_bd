@@ -212,6 +212,38 @@ li:hover {
     transform: translateY(-2px);
 }
 
+/* --- Flash Messages --- */
+.flashes {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--white);
+    animation: fadeIn 0.5s ease;
+}
+
+.alert-success {
+    background-color: #28a745; /* Green */
+    border-color: #28a745;
+}
+
+.alert-error {
+    background-color: #dc3545; /* Red */
+    border-color: #dc3545;
+}
+
+.alert-warning {
+    background-color: #ffc107; /* Yellow */
+    border-color: #ffc107;
+    color: var(--black);
+}
+
 /* --- Table Styling --- */
 table {
     width: 100%;

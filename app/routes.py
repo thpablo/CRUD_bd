@@ -293,11 +293,14 @@ def assign_role():
             # --- Roles ---
             if request.form.get('is_aluno') and not pessoa.aluno:
                 aluno_obj = Aluno(
+                    cpf=pessoa.cpf,
                     matricula=request.form.get('matricula'),
                     id_pcd=pcd_obj.id_pcd if pcd_obj and request.form.get('is_aluno_pcd') else None,
                     id_membro=membro_obj.id_membro if membro_obj and request.form.get('is_aluno_membro') else None
                 )
-                pessoa.aluno = aluno_obj
+                # The relationship is now handled by the foreign key, but we can also assign to the back-reference
+                # pessoa.aluno = aluno_obj
+                db.session.add(aluno_obj)
 
                 curso_codigo = request.form.get('codigo_curso')
                 if curso_codigo:
@@ -309,10 +312,12 @@ def assign_role():
 
             if request.form.get('is_servidor') and not pessoa.servidor:
                 servidor_obj = Servidor(
+                    cpf=pessoa.cpf,
                     tipodecontrato=request.form.get('tipodecontrato'),
                     codigodepartamentosetor=request.form.get('codigo_departamento')
                 )
-                pessoa.servidor = servidor_obj
+                # pessoa.servidor = servidor_obj
+                db.session.add(servidor_obj)
 
                 tipo_servidor = request.form.get('tipo_servidor')
                 if tipo_servidor == 'docente':
