@@ -36,12 +36,13 @@
         <label><input type="checkbox" id="is_aluno_pcd" name="is_aluno_pcd" class="pcd-checkbox"> É PCD?</label>
         <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
         <div>
-            <label for="matricula">Matrícula:</label>
-            <input type="text" id="matricula" name="matricula">
+            <label for="matricula">Matrícula: *</label>
+            <input type="text" id="matricula" name="matricula" required>
         </div>
         <div>
-            <label for="codigo_curso">Curso:</label>
-            <select id="codigo_curso" name="codigo_curso">
+            <label for="codigo_curso">Curso: *</label>
+            <select id="codigo_curso" name="codigo_curso" required>
+                <option value="">Selecione um curso...</option>
                 {% for curso in cursos %}<option value="{{ curso.codigo }}">{{ curso.nome }}</option>{% endfor %}
             </select>
         </div>
@@ -51,18 +52,19 @@
     <div id="servidor_fields" class="dynamic-section" style="display:none;">
         <h3>Detalhes do Servidor</h3>
         <div>
-            <label for="tipodecontrato">Tipo de Contrato:</label>
-            <input type="text" id="tipodecontrato" name="tipodecontrato">
+            <label for="tipodecontrato">Tipo de Contrato: *</label>
+            <input type="text" id="tipodecontrato" name="tipodecontrato" required>
         </div>
         <div>
-            <label for="codigo_departamento">Departamento:</label>
-            <select id="codigo_departamento" name="codigo_departamento">
+            <label for="codigo_departamento">Departamento: *</label>
+            <select id="codigo_departamento" name="codigo_departamento" required>
+                <option value="">Selecione um departamento...</option>
                 {% for departamento in departamentos %}<option value="{{ departamento.codigo }}">{{ departamento.nome }}</option>{% endfor %}
             </select>
         </div>
         <div>
-            <label for="tipo_servidor">Tipo de Servidor:</label>
-            <select id="tipo_servidor" name="tipo_servidor" onchange="showServidorSubFields()">
+            <label for="tipo_servidor">Tipo de Servidor: *</label>
+            <select id="tipo_servidor" name="tipo_servidor" onchange="showServidorSubFields()" required>
                 <option value="">Selecione...</option>
                 <option value="docente">Docente</option>
                 <option value="tecnico">Técnico Administrativo</option>
@@ -74,8 +76,8 @@
             <h4>Docente</h4>
             <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
             <div>
-                <label for="siape_docente">SIAPE:</label>
-                <input type="text" id="siape_docente" name="siape_docente">
+                <label for="siape_docente">SIAPE: *</label>
+                <input type="text" id="siape_docente" name="siape_docente" required>
             </div>
         </div>
 
@@ -84,8 +86,8 @@
             <label><input type="checkbox" id="is_tecnico_pcd" name="is_tecnico_pcd" class="pcd-checkbox"> É PCD?</label>
             <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
             <div>
-                <label for="siape_tecnico">SIAPE:</label>
-                <input type="text" id="siape_tecnico" name="siape_tecnico">
+                <label for="siape_tecnico">SIAPE: *</label>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" required>
             </div>
             <div>
                 <label for="id_cargo_tecnico">Cargo:</label>
@@ -112,7 +114,8 @@
         <h3>Detalhes da Deficiência</h3>
         <div id="deficiencias-container">
             <div class="deficiencia-entry">
-                <select name="deficiencias[]" title="Categoria da Deficiência">
+                <label>Categoria da Deficiência: *</label>
+                <select name="deficiencias[]" title="Categoria da Deficiência" required>
                     <option value="">Selecione a Categoria</option>
                     {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id_deficiencia }}">{{ deficiencia.categoria }}</option>{% endfor %}
                 </select>
@@ -127,8 +130,8 @@
     <div id="membro_details" class="dynamic-section" style="display:none;">
         <h3>Detalhes do Membro da Equipe CAIN</h3>
         <div>
-            <label for="regimedetrabalho">Regime de Trabalho:</label>
-            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido">
+            <label for="regimedetrabalho">Regime de Trabalho: *</label>
+            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido" required>
         </div>
         <div>
             <label for="categoria_membro">Categoria:</label>

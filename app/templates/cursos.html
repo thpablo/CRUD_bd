@@ -17,20 +17,20 @@
   <form action="{{ url_for('cursos') }}" method="post">
     <h2>Adicionar Novo Curso</h2>
     <div>
-        <label for="codigo">Código:</label>
+        <label for="codigo">Código: *</label>
         <input type="text" id="codigo" name="codigo" required pattern="[0-9]*" title="O código deve ser numérico.">
     </div>
     <div>
-        <label for="nome">Nome:</label>
+        <label for="nome">Nome: *</label>
         <input type="text" id="nome" name="nome" required>
     </div>
     <div>
-        <label for="modalidade">Modalidade:</label>
-        <input type="text" id="modalidade" name="modalidade">
+        <label for="modalidade">Modalidade: *</label>
+        <input type="text" id="modalidade" name="modalidade" required>
     </div>
     <div>
-        <label for="niveldeformacao">Nível de Formação:</label>
-        <input type="text" id="niveldeformacao" name="niveldeformacao">
+        <label for="niveldeformacao">Nível de Formação: *</label>
+        <input type="text" id="niveldeformacao" name="niveldeformacao" required>
     </div>
     <div style="text-align: right;">
         <button type="submit">Adicionar Curso</button>
