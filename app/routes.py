@@ -357,7 +357,7 @@ def assign_role():
         if not search_cpf.isdigit() or len(search_cpf) != 11:
             flash('CPF de busca inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
         else:
-            sql_query = get_sql_from_file('select_pessoa_by_cpf.sql')
+            sql_query = get_sql_from_file('select_person_details_for_role_assignment.sql')
             result = db.session.execute(text(sql_query), {'cpf': search_cpf}).first()
             pessoa = result if result else None
             if not pessoa:

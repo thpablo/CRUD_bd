@@ -20,24 +20,15 @@
 
 <div class="form-section">
     <h3>Funções Atuais:</h3>
-    {% if not pessoa.aluno and not pessoa.servidor %}
+    {% if not pessoa.is_aluno and not pessoa.is_servidor %}
         <p>Nenhuma função atribuída atualmente.</p>
     {% else %}
         <ul>
-            {% if pessoa.aluno %}
-                <li>Aluno</li>
+            {% if pessoa.is_aluno %}
+                <li>Aluno {% if pessoa.is_membro_cain %}(Membro da Equipe CAIN){% endif %}</li>
             {% endif %}
-            {% if pessoa.servidor %}
-                <li>
-                    Servidor
-                    {% if pessoa.servidor.docente %}
-                        (Docente)
-                    {% elif pessoa.servidor.tecnico %}
-                        (Técnico Administrativo)
-                    {% elif pessoa.servidor.terceirizado %}
-                        (Terceirizado)
-                    {% endif %}
-                </li>
+            {% if pessoa.is_servidor %}
+                <li>Servidor ({{ pessoa.servidor_tipo }}) {% if pessoa.is_membro_cain %}(Membro da Equipe CAIN){% endif %}</li>
             {% endif %}
         </ul>
     {% endif %}
@@ -49,9 +40,9 @@
 
     <div class="form-section">
         <h2>Selecione o(s) Vínculo(s)</h2>
-        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.aluno %}disabled{% endif %}> É Aluno?</label>
-        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.servidor %}disabled{% endif %}> É Servidor?</label>
-        {% if pessoa.aluno or pessoa.servidor %}
+        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.is_aluno %}disabled{% endif %}> É Aluno?</label>
+        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.is_servidor %}disabled{% endif %}> É Servidor?</label>
+        {% if pessoa.is_aluno or pessoa.is_servidor %}
             <p><small><i>Papéis já existentes não podem ser modificados nesta tela.</i></small></p>
         {% endif %}
     </div>
