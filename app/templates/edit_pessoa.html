@@ -150,15 +150,33 @@
     <div id="pcd_details" class="dynamic-section" style="display:none;">
         <h3>Detalhes da Deficiência</h3>
         <div id="deficiencias-container">
-            <div class="deficiencia-entry">
-                <label>Categoria da Deficiência: *</label>
-                <select name="deficiencias[]" title="Categoria da Deficiência" required>
-                    <option value="">Selecione a Categoria</option>
-                    {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id_deficiencia }}">{{ deficiencia.categoria }}</option>{% endfor %}
-                </select>
-                <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
-                <input type="text" name="observacoes[]" placeholder="Observação">
-            </div>
+            {% set pcd_record = pessoa.aluno.pcd or (pessoa.servidor.docente.pcd if pessoa.servidor and pessoa.servidor.docente else None) or (pessoa.servidor.tecnico.pcd if pessoa.servidor and pessoa.servidor.tecnico else None) %}
+            {% if pcd_record and pcd_record.dados_deficiencia %}
+                {% for dado in pcd_record.dados_deficiencia %}
+                <div class="deficiencia-entry">
+                    <label>Categoria da Deficiência: *</label>
+                    <select name="deficiencias[]" title="Categoria da Deficiência" required>
+                        <option value="">Selecione a Categoria</option>
+                        {% for deficiencia in deficiencias %}
+                            <option value="{{ deficiencia.id_deficiencia }}" {% if dado.id_deficiencia == deficiencia.id_deficiencia %}selected{% endif %}>{{ deficiencia.categoria }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)" value="{{ dado.grau or '' }}">
+                    <input type="text" name="observacoes[]" placeholder="Observação" value="{{ dado.observacoes or '' }}">
+                    <button type="button" onclick="this.parentElement.remove()">Remover</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="deficiencia-entry">
+                    <label>Categoria da Deficiência: *</label>
+                    <select name="deficiencias[]" title="Categoria da Deficiência" required>
+                        <option value="">Selecione a Categoria</option>
+                        {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id_deficiencia }}">{{ deficiencia.categoria }}</option>{% endfor %}
+                    </select>
+                    <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+                    <input type="text" name="observacoes[]" placeholder="Observação">
+                </div>
+            {% endif %}
         </div>
         <button type="button" onclick="addDeficienciaInput()">Adicionar Outra Deficiência</button>
     </div>

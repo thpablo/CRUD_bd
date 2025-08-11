@@ -215,10 +215,71 @@ def edit_pessoa(cpf):
                 if telefone_form:
                     db.session.execute(text(sql_insert_telefone), {'cpf': cpf, 'telefone': telefone_form})
 
-            # Note: The logic for updating roles (Aluno, Servidor) has been removed
-            # from this route to prevent conflicts between raw SQL execution and
-            # the ORM's session state. Role management should be handled exclusively
-            # through the 'Atribuir Papel' page.
+            # --- Handle PCD ---
+            # This logic is complex because a person can be an Aluno or Servidor (or both in theory)
+            # and their PCD status is linked to those roles.
+            is_pcd = any([
+                request.form.get('is_aluno_pcd'),
+                (pessoa.servidor and pessoa.servidor.docente), # Docentes are always PCD
+                request.form.get('is_tecnico_pcd')
+            ])
+
+            # Find the existing PCD record, if any
+            existing_pcd_id = None
+            if pessoa.aluno and pessoa.aluno.id_pcd:
+                existing_pcd_id = pessoa.aluno.id_pcd
+            elif pessoa.servidor and pessoa.servidor.docente and pessoa.servidor.docente.id_pcd:
+                existing_pcd_id = pessoa.servidor.docente.id_pcd
+            elif pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.id_pcd:
+                existing_pcd_id = pessoa.servidor.tecnico.id_pcd
+
+            pcd_obj = None
+            if is_pcd:
+                if existing_pcd_id:
+                    pcd_obj = PCD.query.get(existing_pcd_id)
+                    # Clean old disability data before adding new
+                    for old_data in pcd_obj.dados_deficiencia:
+                        db.session.delete(old_data)
+                else:
+                    pcd_obj = PCD()
+                    db.session.add(pcd_obj)
+                    db.session.flush() # Flush to get the new pcd_obj.id_pcd
+
+                # Add new disability data from form
+                deficiencia_ids = request.form.getlist('deficiencias[]')
+                graus = request.form.getlist('graus[]')
+                observacoes = request.form.getlist('observacoes[]')
+                for i, def_id in enumerate(deficiencia_ids):
+                    if def_id:
+                        dados = DadosDeficienciaPCD(
+                            id_pcd=pcd_obj.id_pcd,
+                            id_deficiencia=def_id,
+                            grau=graus[i],
+                            observacoes=observacoes[i]
+                        )
+                        db.session.add(dados)
+
+                # Link the PCD object to the role
+                if request.form.get('is_aluno_pcd') and pessoa.aluno:
+                    pessoa.aluno.id_pcd = pcd_obj.id_pcd
+                if pessoa.servidor and pessoa.servidor.docente:
+                    pessoa.servidor.docente.id_pcd = pcd_obj.id_pcd
+                if request.form.get('is_tecnico_pcd') and pessoa.servidor and pessoa.servidor.tecnico:
+                    pessoa.servidor.tecnico.id_pcd = pcd_obj.id_pcd
+
+            elif existing_pcd_id:
+                # If the person is no longer PCD, we need to remove the link and the PCD record itself.
+                if pessoa.aluno and pessoa.aluno.id_pcd == existing_pcd_id:
+                    pessoa.aluno.id_pcd = None
+                if pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.id_pcd == existing_pcd_id:
+                     pessoa.servidor.tecnico.id_pcd = None
+                # Note: We don't unlink from Docente as it's mandatory PCD.
+
+                # Now, delete the orphan PCD record
+                pcd_to_delete = PCD.query.get(existing_pcd_id)
+                db.session.delete(pcd_to_delete)
+
+
             db.session.commit()
             flash('Pessoa atualizada com sucesso!', 'success')
             return redirect(url_for('pessoas'))
