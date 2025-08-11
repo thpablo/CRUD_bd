@@ -18,6 +18,32 @@
 <hr>
 <h2>Atribuindo Papel para: {{ pessoa.nome }} (CPF: {{ pessoa.cpf }})</h2>
 
+<div class="form-section">
+    <h3>Funções Atuais:</h3>
+    {% if not pessoa.aluno and not pessoa.servidor %}
+        <p>Nenhuma função atribuída atualmente.</p>
+    {% else %}
+        <ul>
+            {% if pessoa.aluno %}
+                <li>Aluno</li>
+            {% endif %}
+            {% if pessoa.servidor %}
+                <li>
+                    Servidor
+                    {% if pessoa.servidor.docente %}
+                        (Docente)
+                    {% elif pessoa.servidor.tecnico %}
+                        (Técnico Administrativo)
+                    {% elif pessoa.servidor.terceirizado %}
+                        (Terceirizado)
+                    {% endif %}
+                </li>
+            {% endif %}
+        </ul>
+    {% endif %}
+</div>
+<hr>
+
 <form action="{{ url_for('assign_role') }}" method="post">
     <input type="hidden" name="cpf" value="{{ pessoa.cpf }}">
 
