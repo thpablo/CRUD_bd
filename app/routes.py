@@ -277,8 +277,7 @@ def assign_role():
             membro_obj = None
             if is_membro:
                 membro_obj = MembroDaEquipe(
-                    regimedetrabalho=request.form.get('regimedetrabalho'),
-                    categoria=request.form.get('categoria_membro')
+                    regimedetrabalho=request.form.get('regimedetrabalho')
                 )
                 db.session.add(membro_obj)
                 db.session.flush()

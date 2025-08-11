@@ -134,7 +134,6 @@ class MembroDaEquipe(db.Model):
     __tablename__ = 'membrodaequipe'
     id_membro = Column(Integer, primary_key=True)
     regimedetrabalho = Column(String(100), nullable=False)
-    categoria = Column(String(100))
     id_coordenador = Column(Integer, ForeignKey('membrodaequipe.id_membro'))
     coordenador = relationship('MembroDaEquipe', remote_side=[id_membro], backref='equipe_coordenada')
     tecnico_administrativo = relationship('TecnicoAdministrativo', back_populates='membro_equipe', uselist=False)
@@ -187,15 +186,17 @@ class Aluno(db.Model):
 
 class PeriodoDeVinculoPCD(db.Model):
     __tablename__ = 'periododevinculopcd'
-    datadeinicio = Column(Date, primary_key=True)
-    id_pcd = Column(Integer, ForeignKey('pcd.id_pcd'), primary_key=True)
+    id_periodo_de_vinculo_pcd = Column(Integer, primary_key=True)
+    datadeinicio = Column(Date, nullable=False)
+    id_pcd = Column(Integer, ForeignKey('pcd.id_pcd'), nullable=False)
     datadefim = Column(Date)
     pcd = relationship('PCD', back_populates='periodos_vinculo')
 
 class PeriodoDeVinculoMembro(db.Model):
     __tablename__ = 'periododevinculomembro'
-    datadeinicio = Column(Date, primary_key=True)
-    id_membro = Column(Integer, ForeignKey('membrodaequipe.id_membro'), primary_key=True)
+    id_periodo_de_vinculo_membro = Column(Integer, primary_key=True)
+    datadeinicio = Column(Date, nullable=False)
+    id_membro = Column(Integer, ForeignKey('membrodaequipe.id_membro'), nullable=False)
     datadefim = Column(Date)
     membro = relationship('MembroDaEquipe', back_populates='periodos_vinculo')
 
