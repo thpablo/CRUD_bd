@@ -14,14 +14,14 @@
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_departamento') }}" method="post">
+  <form action="{{ url_for('departamentos') }}" method="post">
     <h2>Adicionar Novo Departamento</h2>
     <div>
-        <label for="codigo">Código:</label>
-        <input type="text" id="codigo" name="codigo" required>
+        <label for="codigo">Código: *</label>
+        <input type="text" id="codigo" name="codigo" required pattern="[0-9]*" title="O código deve ser numérico.">
     </div>
     <div>
-        <label for="nome">Nome:</label>
+        <label for="nome">Nome: *</label>
         <input type="text" id="nome" name="nome" required>
     </div>
     <div>

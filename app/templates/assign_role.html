@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Atribuir Papel{% endblock %}
+
+{% block content %}
+<h1>Atribuir Papel a uma Pessoa</h1>
+
+<div class="form-section">
+    <h2>Buscar Pessoa</h2>
+    <form action="{{ url_for('assign_role') }}" method="get">
+        <label for="search_cpf">Buscar por CPF:</label>
+        <input type="text" id="search_cpf" name="search_cpf" value="{{ request.args.get('search_cpf', '') }}" maxlength="11" pattern="[0-9]{11}" title="Digite os 11 dígitos do CPF, sem pontos ou traços.">
+        <button type="submit">Buscar</button>
+    </form>
+</div>
+
+{% if pessoa %}
+<hr>
+<h2>Atribuindo Papel para: {{ pessoa.nome }} (CPF: {{ pessoa.cpf }})</h2>
+
+<form action="{{ url_for('assign_role') }}" method="post">
+    <input type="hidden" name="cpf" value="{{ pessoa.cpf }}">
+
+    <div class="form-section">
+        <h2>Selecione o(s) Vínculo(s)</h2>
+        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.aluno %}disabled{% endif %}> É Aluno?</label>
+        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.servidor %}disabled{% endif %}> É Servidor?</label>
+        {% if pessoa.aluno or pessoa.servidor %}
+            <p><small><i>Papéis já existentes não podem ser modificados nesta tela.</i></small></p>
+        {% endif %}
+    </div>
+
+    <!-- Seção Aluno -->
+    <div id="aluno_fields" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Aluno</h3>
+        <label><input type="checkbox" id="is_aluno_pcd" name="is_aluno_pcd" class="pcd-checkbox"> É PCD?</label>
+        <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
+        <div>
+            <label for="matricula">Matrícula: *</label>
+            <input type="text" id="matricula" name="matricula" required>
+        </div>
+        <div>
+            <label for="codigo_curso">Curso: *</label>
+            <select id="codigo_curso" name="codigo_curso" required>
+                <option value="">Selecione um curso...</option>
+                {% for curso in cursos %}<option value="{{ curso.codigo }}">{{ curso.nome }}</option>{% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Seção Servidor -->
+    <div id="servidor_fields" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Servidor</h3>
+        <div>
+            <label for="tipodecontrato">Tipo de Contrato: *</label>
+            <input type="text" id="tipodecontrato" name="tipodecontrato" required>
+        </div>
+        <div>
+            <label for="codigo_departamento">Departamento: *</label>
+            <select id="codigo_departamento" name="codigo_departamento" required>
+                <option value="">Selecione um departamento...</option>
+                {% for departamento in departamentos %}<option value="{{ departamento.codigo }}">{{ departamento.nome }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="tipo_servidor">Tipo de Servidor: *</label>
+            <select id="tipo_servidor" name="tipo_servidor" onchange="showServidorSubFields()" required>
+                <option value="">Selecione...</option>
+                <option value="docente">Docente</option>
+                <option value="tecnico">Técnico Administrativo</option>
+                <option value="terceirizado">Terceirizado</option>
+            </select>
+        </div>
+
+        <div id="docente_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Docente</h4>
+            <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
+            <div>
+                <label for="siape_docente">SIAPE: *</label>
+                <input type="text" id="siape_docente" name="siape_docente" required>
+            </div>
+        </div>
+
+        <div id="tecnico_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Técnico Administrativo</h4>
+            <label><input type="checkbox" id="is_tecnico_pcd" name="is_tecnico_pcd" class="pcd-checkbox"> É PCD?</label>
+            <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
+            <div>
+                <label for="siape_tecnico">SIAPE: *</label>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" required>
+            </div>
+            <div>
+                <label for="id_cargo_tecnico">Cargo:</label>
+                <select id="id_cargo_tecnico" name="id_cargo_tecnico">
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}">{{ cargo.nome }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div id="terceirizado_fields" class="servidor-sub-section" style="display:none;">
+            <h4>Terceirizado</h4>
+            <label><input type="checkbox" id="is_terceirizado_membro" name="is_terceirizado_membro" class="membro-checkbox" checked disabled> É Membro da Equipe CAIN (Obrigatório)</label>
+            <div>
+                <label for="id_cargo_terceirizado">Cargo:</label>
+                <select id="id_cargo_terceirizado" name="id_cargo_terceirizado">
+                    {% for cargo in cargos %}<option value="{{ cargo.id_cargo }}">{{ cargo.nome }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção Detalhes PCD -->
+    <div id="pcd_details" class="dynamic-section" style="display:none;">
+        <h3>Detalhes da Deficiência</h3>
+        <div id="deficiencias-container">
+            <div class="deficiencia-entry">
+                <label>Categoria da Deficiência: *</label>
+                <select name="deficiencias[]" title="Categoria da Deficiência" required>
+                    <option value="">Selecione a Categoria</option>
+                    {% for deficiencia in deficiencias %}<option value="{{ deficiencia.id_deficiencia }}">{{ deficiencia.categoria }}</option>{% endfor %}
+                </select>
+                <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+                <input type="text" name="observacoes[]" placeholder="Observação">
+            </div>
+        </div>
+        <button type="button" onclick="addDeficienciaInput()">Adicionar Outra Deficiência</button>
+    </div>
+
+    <!-- Seção Detalhes Membro CAIN -->
+    <div id="membro_details" class="dynamic-section" style="display:none;">
+        <h3>Detalhes do Membro da Equipe CAIN</h3>
+        <div>
+            <label for="regimedetrabalho">Regime de Trabalho: *</label>
+            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido" required>
+        </div>
+        <div>
+            <label for="categoria_membro">Categoria:</label>
+            <input type="text" id="categoria_membro" name="categoria_membro">
+        </div>
+        <h4>Período de Vínculo</h4>
+        <div>
+            <label for="datadeinicio">Data de Início:</label>
+            <input type="date" id="datadeinicio" name="datadeinicio">
+        </div>
+        <div>
+            <label for="datadefim">Data de Término:</label>
+            <input type="date" id="datadefim" name="datadefim">
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button type="submit">Salvar Papéis</button>
+    </div>
+</form>
+{% endif %}
+
+<script>
+// --- Event Listeners ---
+document.getElementById('is_aluno')?.addEventListener('change', (e) => toggleSection('aluno_fields', e.target.checked));
+document.getElementById('is_servidor')?.addEventListener('change', (e) => toggleSection('servidor_fields', e.target.checked));
+document.querySelectorAll('.pcd-checkbox').forEach(cb => cb.addEventListener('change', updatePcdDetailsVisibility));
+document.querySelectorAll('.membro-checkbox').forEach(cb => cb.addEventListener('change', updateMembroDetailsVisibility));
+
+function toggleSection(sectionId, isVisible) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.style.display = isVisible ? 'block' : 'none';
+    }
+}
+
+function updatePcdDetailsVisibility() {
+    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => {
+        // A checkbox is only considered if it's visible (its offsetParent is not null) and checked.
+        return cb.offsetParent !== null && cb.checked;
+    });
+    toggleSection('pcd_details', isAnyPcd);
+}
+
+function updateMembroDetailsVisibility() {
+    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => {
+        // A checkbox is only considered if it's visible (its offsetParent is not null) and checked.
+        return cb.offsetParent !== null && cb.checked;
+    });
+    toggleSection('membro_details', isAnyMembro);
+}
+
+function showServidorSubFields() {
+    const tipo = document.getElementById("tipo_servidor")?.value;
+    document.querySelectorAll('.servidor-sub-section').forEach(sec => sec.style.display = 'none');
+    if (tipo) {
+        const section = document.getElementById(tipo + "_fields");
+        if (section) {
+            section.style.display = "block";
+        }
+    }
+    updatePcdDetailsVisibility();
+    updateMembroDetailsVisibility();
+}
+
+// --- Dynamic Input Adders ---
+function addDeficienciaInput() {
+    const container = document.getElementById('deficiencias-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'deficiencia-entry';
+    const originalSelect = document.querySelector('[name="deficiencias[]"]');
+    newEntry.innerHTML = `
+        ${originalSelect.outerHTML}
+        <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+        <input type="text" name="observacoes[]" placeholder="Observação">
+        <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    `;
+    container.appendChild(newEntry);
+}
+
+// --- Initial State Setup ---
+document.addEventListener('DOMContentLoaded', () => {
+    const isAlunoCheckbox = document.getElementById('is_aluno');
+    if (isAlunoCheckbox) {
+        toggleSection('aluno_fields', isAlunoCheckbox.checked);
+    }
+    const isServidorCheckbox = document.getElementById('is_servidor');
+    if (isServidorCheckbox) {
+        toggleSection('servidor_fields', isServidorCheckbox.checked);
+    }
+    showServidorSubFields();
+});
+</script>
+{% endblock %}

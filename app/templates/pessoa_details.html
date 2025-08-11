@@ -54,13 +54,13 @@
     {% if pessoa.aluno %}
       <li>Aluno
         {% if pessoa.aluno.pcd %} (PCD) {% endif %}
-        {% if pessoa.aluno.membro_da_equipe %} (Membro da Equipe) {% endif %}
+        {% if pessoa.aluno.membro_equipe %} (Membro da Equipe) {% endif %}
       </li>
     {% endif %}
     {% if pessoa.servidor %}
       <li>Servidor
         {% if pessoa.servidor.docente %} (Docente {% if pessoa.servidor.docente.pcd %}PCD{% endif %}) {% endif %}
-        {% if pessoa.servidor.tecnico_administrativo %} (Técnico Administrativo {% if pessoa.servidor.tecnico_administrativo.pcd %}PCD{% endif %}{% if pessoa.servidor.tecnico_administrativo.membro_da_equipe %}, Membro da Equipe{% endif %}) {% endif %}
+        {% if pessoa.servidor.tecnico %} (Técnico Administrativo {% if pessoa.servidor.tecnico.pcd %}PCD{% endif %}{% if pessoa.servidor.tecnico.membro_equipe %}, Membro da Equipe{% endif %}) {% endif %}
         {% if pessoa.servidor.terceirizado %} (Terceirizado, Membro da Equipe) {% endif %}
       </li>
     {% endif %}

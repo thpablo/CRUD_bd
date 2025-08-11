@@ -19,10 +19,23 @@
     <nav>
       <a href="{{ url_for('index') }}">Home</a>
       <a href="{{ url_for('pessoas') }}">Pessoas</a>
+      <a href="{{ url_for('add_pessoa') }}">Adicionar Pessoa</a>
+      <a href="{{ url_for('assign_role') }}">Atribuir Papel</a>
       <a href="{{ url_for('cursos') }}">Cursos</a>
       <a href="{{ url_for('departamentos') }}">Departamentos</a>
+      <a href="{{ url_for('relatorio_pcd') }}">Relatório PCD</a>
+      <a href="{{ url_for('equipe_info') }}">Info Equipe</a>
     </nav>
     <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flashes">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
       {% block content %}{% endblock %}
     </div>
     <footer>

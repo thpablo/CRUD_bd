@@ -8,29 +8,29 @@
   <ul>
     {% for curso in cursos %}
       <li>
-        {{ curso.nome }}
+        <a href="{{ url_for('alunos_por_curso', codigo_curso=curso.codigo) }}">{{ curso.nome }}</a>
         <span>{{ curso.codigo }}</span>
       </li>
     {% endfor %}
   </ul>
 
-  <form action="{{ url_for('add_curso') }}" method="post">
+  <form action="{{ url_for('cursos') }}" method="post">
     <h2>Adicionar Novo Curso</h2>
     <div>
-        <label for="codigo">Código:</label>
-        <input type="text" id="codigo" name="codigo" required>
+        <label for="codigo">Código: *</label>
+        <input type="text" id="codigo" name="codigo" required pattern="[0-9]*" title="O código deve ser numérico.">
     </div>
     <div>
-        <label for="nome">Nome:</label>
+        <label for="nome">Nome: *</label>
         <input type="text" id="nome" name="nome" required>
     </div>
     <div>
-        <label for="modalidade">Modalidade:</label>
-        <input type="text" id="modalidade" name="modalidade">
+        <label for="modalidade">Modalidade: *</label>
+        <input type="text" id="modalidade" name="modalidade" required>
     </div>
     <div>
-        <label for="nivel_formacao">Nível de Formação:</label>
-        <input type="text" id="nivel_formacao" name="nivel_formacao">
+        <label for="niveldeformacao">Nível de Formação: *</label>
+        <input type="text" id="niveldeformacao" name="niveldeformacao" required>
     </div>
     <div style="text-align: right;">
         <button type="submit">Adicionar Curso</button>

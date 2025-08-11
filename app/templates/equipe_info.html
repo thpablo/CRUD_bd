@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Informações da Equipe e Alunos{% endblock %}
+
+{% block content %}
+  <h1>Informações da Equipe e Alunos</h1>
+
+  <div class="report-section">
+    <h2>Todos os Alunos</h2>
+    {% if alunos %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Matrícula</th>
+                  <th>Curso</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for aluno in alunos %}
+                <tr>
+                  <td>{{ aluno.nome }}</td>
+                  <td>{{ aluno.cpf }}</td>
+                  <td>{{ aluno.matricula }}</td>
+                  <td>{{ aluno.nome_curso }}</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% else %}
+      <p>Não há alunos cadastrados.</p>
+    {% endif %}
+  </div>
+
+  <div class="report-section">
+    <h2>Todos os Membros da Equipe CAIN</h2>
+    {% if membros_equipe %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Papel Principal</th>
+                  <th>Regime de Trabalho</th>
+                  <th>Categoria</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for membro in membros_equipe %}
+                <tr>
+                  <td>{{ membro.nome }}</td>
+                  <td>{{ membro.cpf }}</td>
+                  <td>{{ membro.papel_principal }}</td>
+                  <td>{{ membro.regimedetrabalho }}</td>
+                  <td>{{ membro.categoria }}</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% else %}
+      <p>Não há membros de equipe cadastrados.</p>
+    {% endif %}
+  </div>
+
+  <div class="report-section">
+    <h2>Detalhes dos Bolsistas</h2>
+    {% if bolsistas %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Nome</th>
+                  <th>Matrícula</th>
+                  <th>Curso</th>
+                  <th>Tipo da Bolsa</th>
+                  <th>Salário</th>
+                  <th>Carga Horária</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for bolsista in bolsistas %}
+                <tr>
+                  <td>{{ bolsista.nome }}</td>
+                  <td>{{ bolsista.matricula }}</td>
+                  <td>{{ bolsista.nome_curso }}</td>
+                  <td>{{ bolsista.tipo_bolsa }}</td>
+                  <td>{{ bolsista.salario }}</td>
+                  <td>{{ bolsista.cargahoraria }}h</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% else %}
+      <p>Não há bolsistas cadastrados.</p>
+    {% endif %}
+  </div>
+
+{% endblock %}
