@@ -21,8 +21,16 @@ def index():
 
 @app.route('/pessoas')
 def pessoas():
-    sql_query = get_sql_from_file('select_all_pessoas.sql')
-    result = db.session.execute(text(sql_query))
+    search_term = request.args.get('q')
+    if search_term:
+        sql_query = get_sql_from_file('search_pessoas.sql')
+        # Add wildcards for LIKE/ILIKE search
+        query_param = f"%{search_term}%"
+        result = db.session.execute(text(sql_query), {'query': query_param})
+    else:
+        sql_query = get_sql_from_file('select_all_pessoas.sql')
+        result = db.session.execute(text(sql_query))
+
     all_pessoas = result.mappings().all()
     return render_template('pessoas.html', pessoas=all_pessoas)
 
