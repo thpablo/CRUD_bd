@@ -9,8 +9,7 @@ SELECT
     p.nome,
     'Aluno' AS papel_principal,
     m.id_membro,
-    m.regimedetrabalho,
-    m.categoria
+    m.regimedetrabalho
 FROM pessoa p
 JOIN aluno a ON p.cpf = a.cpf
 JOIN membrodaequipe m ON a.id_membro = m.id_membro
@@ -23,8 +22,7 @@ SELECT
     p.nome,
     'Técnico Administrativo' AS papel_principal,
     m.id_membro,
-    m.regimedetrabalho,
-    m.categoria
+    m.regimedetrabalho
 FROM pessoa p
 JOIN servidor s ON p.cpf = s.cpf
 JOIN tecnicoadministrativo t ON s.cpf = t.cpf
@@ -38,8 +36,7 @@ SELECT
     p.nome,
     'Terceirizado' AS papel_principal,
     m.id_membro,
-    m.regimedetrabalho,
-    m.categoria
+    m.regimedetrabalho
 FROM pessoa p
 JOIN servidor s ON p.cpf = s.cpf
 JOIN terceirizado t ON s.cpf = t.cpf
