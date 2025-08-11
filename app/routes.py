@@ -157,7 +157,11 @@ def equipe_info():
     sql_bolsistas = get_sql_from_file('select_all_bolsistas_info.sql')
     bolsistas = db.session.execute(text(sql_bolsistas)).mappings().all()
 
-    return render_template('equipe_info.html', alunos=alunos, membros_equipe=membros_equipe, bolsistas=bolsistas)
+    # Query for all servers info
+    sql_servidores = get_sql_from_file('select_all_servidores_info.sql')
+    servidores = db.session.execute(text(sql_servidores)).mappings().all()
+
+    return render_template('equipe_info.html', alunos=alunos, membros_equipe=membros_equipe, bolsistas=bolsistas, servidores=servidores)
 
 @app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
 def edit_pessoa(cpf):

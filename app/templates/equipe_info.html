@@ -34,6 +34,40 @@
   </div>
 
   <div class="report-section">
+    <h2>Todos os Servidores</h2>
+    {% if servidores %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Nome</th>
+                  <th>CPF</th>
+                  <th>Tipo de Contrato</th>
+                  <th>Departamento</th>
+                  <th>Papel Específico</th>
+                  <th>SIAPE</th>
+                  <th>Cargo</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for servidor in servidores %}
+                <tr>
+                  <td>{{ servidor.nome }}</td>
+                  <td>{{ servidor.cpf }}</td>
+                  <td>{{ servidor.tipodecontrato }}</td>
+                  <td>{{ servidor.nome_departamento }}</td>
+                  <td>{{ servidor.papel_especifico }}</td>
+                  <td>{{ servidor.siape or 'N/A' }}</td>
+                  <td>{{ servidor.nome_cargo or 'N/A' }}</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% else %}
+      <p>Não há servidores cadastrados.</p>
+    {% endif %}
+  </div>
+
+  <div class="report-section">
     <h2>Todos os Membros da Equipe CAIN</h2>
     {% if membros_equipe %}
       <table>
