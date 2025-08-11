@@ -64,7 +64,7 @@
         <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox" {% if pessoa.aluno and pessoa.aluno.membro_equipe %}checked{% endif %}> É Membro da Equipe CAIN?</label>
         <div>
             <label for="matricula">Matrícula: *</label>
-            <input type="text" id="matricula" name="matricula" value="{{ pessoa.aluno.matricula if pessoa.aluno else '' }}" required>
+            <input type="text" id="matricula" name="matricula" value="{{ pessoa.aluno.matricula if pessoa.aluno else '' }}" required maxlength="9">
         </div>
         <div>
             <label for="codigo_curso">Curso: *</label>
@@ -110,7 +110,7 @@
             <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
             <div>
                 <label for="siape_docente">SIAPE: *</label>
-                <input type="text" id="siape_docente" name="siape_docente" value="{{ pessoa.servidor.docente.siape if pessoa.servidor and pessoa.servidor.docente else '' }}" required>
+                <input type="text" id="siape_docente" name="siape_docente" value="{{ pessoa.servidor.docente.siape if pessoa.servidor and pessoa.servidor.docente else '' }}" required maxlength="8">
             </div>
         </div>
 
@@ -120,7 +120,7 @@
             <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox" {% if pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.membro_equipe %}checked{% endif %}> É Membro da Equipe CAIN?</label>
             <div>
                 <label for="siape_tecnico">SIAPE: *</label>
-                <input type="text" id="siape_tecnico" name="siape_tecnico" value="{{ pessoa.servidor.tecnico.siape if pessoa.servidor and pessoa.servidor.tecnico else '' }}" required>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" value="{{ pessoa.servidor.tecnico.siape if pessoa.servidor and pessoa.servidor.tecnico else '' }}" required maxlength="8">
             </div>
             <div>
                 <label for="id_cargo_tecnico">Cargo:</label>

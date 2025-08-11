@@ -37,7 +37,7 @@
         <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
         <div>
             <label for="matricula">Matrícula: *</label>
-            <input type="text" id="matricula" name="matricula" required>
+            <input type="text" id="matricula" name="matricula" required maxlength="9">
         </div>
         <div>
             <label for="codigo_curso">Curso: *</label>
@@ -77,7 +77,7 @@
             <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
             <div>
                 <label for="siape_docente">SIAPE: *</label>
-                <input type="text" id="siape_docente" name="siape_docente" required>
+                <input type="text" id="siape_docente" name="siape_docente" required maxlength="8">
             </div>
         </div>
 
@@ -87,7 +87,7 @@
             <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
             <div>
                 <label for="siape_tecnico">SIAPE: *</label>
-                <input type="text" id="siape_tecnico" name="siape_tecnico" required>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" required maxlength="8">
             </div>
             <div>
                 <label for="id_cargo_tecnico">Cargo:</label>
