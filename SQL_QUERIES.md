@@ -26,6 +26,10 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
 - **Onde:** Rota `/equipe`
 - **O que:** Gera uma lista unificada de todos os membros da equipe CAIN, usando `UNION` para juntar os resultados de Alunos, Técnicos e Terceirizados que são membros.
 
+### `select_all_servidores_info.sql`
+- **Onde:** Rota `/equipe`
+- **O que:** Retorna uma lista detalhada de todos os servidores, incluindo seu tipo de contrato, departamento, papel específico (Docente, Técnico, etc.), SIAPE e cargo, utilizando múltiplos `JOIN`s e `CASE`.
+
 ### `select_all_bolsistas_info.sql`
 - **Onde:** Rota `/equipe`
 - **O que:** Retorna uma lista detalhada de todos os bolsistas, usando `JOIN` e `CASE` para determinar o tipo da bolsa (Inclusão ou Produção) e buscar informações pessoais e do curso.
