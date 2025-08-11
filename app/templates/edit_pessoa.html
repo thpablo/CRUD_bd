@@ -190,7 +190,25 @@
 {% endif %}
 
 <script>
-// Script from assign_role.html, adapted for editing
-// ... (full script here)
+// --- Dynamic Input Adders ---
+function addEmailInput() {
+    const container = document.getElementById('emails-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'email-entry';
+    newEntry.innerHTML = '<input type="email" name="emails[]" placeholder="exemplo@dominio.com"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+function addTelefoneInput() {
+    const container = document.getElementById('telefones-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'telefone-entry';
+    newEntry.innerHTML = '<input type="tel" name="telefones[]" placeholder="(00) 91234-5678"> <button type="button" onclick="this.parentElement.remove()">Remover</button>';
+    container.appendChild(newEntry);
+}
+
+// NOTE: The more complex JS for showing/hiding sections from assign_role.html
+// is not included here as this page has a different, simpler structure for roles.
+// If role editing becomes more complex on this page, that script would need to be adapted.
 </script>
 {% endblock %}
