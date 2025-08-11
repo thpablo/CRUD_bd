@@ -248,6 +248,7 @@ def edit_pessoa(cpf):
                     # Clean old disability data before adding new
                     for old_data in pcd_obj.dados_deficiencia:
                         db.session.delete(old_data)
+                    db.session.flush() # Flush the session to execute the deletes before the inserts
                 else:
                     pcd_obj = PCD()
                     db.session.add(pcd_obj)
