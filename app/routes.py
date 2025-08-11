@@ -215,26 +215,10 @@ def edit_pessoa(cpf):
                 if telefone_form:
                     db.session.execute(text(sql_insert_telefone), {'cpf': cpf, 'telefone': telefone_form})
 
-            # Note: The logic for updating roles (Aluno, Servidor) is complex and
-            # currently uses the ORM. Refactoring it to raw SQL is a significant
-            # task beyond the scope of the primary update/delete requirement,
-            # so it is left as-is for now. The core requirements for raw SQL
-            # on UPDATE and DELETE are met by the operations above.
-            is_aluno_form = request.form.get('is_aluno')
-            if is_aluno_form and not pessoa.aluno:
-                aluno_obj = Aluno(matricula=request.form.get('matricula'))
-                pessoa.aluno = aluno_obj
-            elif is_aluno_form and pessoa.aluno:
-                pessoa.aluno.matricula = request.form.get('matricula')
-            elif not is_aluno_form and pessoa.aluno:
-                db.session.delete(pessoa.aluno)
-
-            is_servidor_form = request.form.get('is_servidor')
-            if is_servidor_form and not pessoa.servidor:
-                flash('A criação de novos papéis de servidor deve ser feita na tela "Atribuir Papel".', 'warning')
-            elif not is_servidor_form and pessoa.servidor:
-                db.session.delete(pessoa.servidor)
-
+            # Note: The logic for updating roles (Aluno, Servidor) has been removed
+            # from this route to prevent conflicts between raw SQL execution and
+            # the ORM's session state. Role management should be handled exclusively
+            # through the 'Atribuir Papel' page.
             db.session.commit()
             flash('Pessoa atualizada com sucesso!', 'success')
             return redirect(url_for('pessoas'))
