@@ -138,12 +138,12 @@ INSERT INTO DadosDeficienciaPCD (ID_PCD, ID_DEFICIENCIA, Grau, Observacoes) VALU
 
 -- Membros da Equipe (IDs will be generated automatically)
 -- Assuming IDs start from 1.
-INSERT INTO MembroDaEquipe (RegimeDeTrabalho, Categoria, ID_COORDENADOR) VALUES
-('Híbrido', 'Apoio Discente', 2),        -- Assumed ID 1 for Ana Clara
-('Presencial', 'Coordenação', NULL),   -- Assumed ID 2 for Daniela Martins
-('Presencial', 'Apoio Externo', 2),    -- Assumed ID 3 for Eduardo Ferreira
-('Remoto', 'Produção de Material', 2), -- Assumed ID 4 for Fernanda Lima
-('Híbrido', 'Desenvolvimento', 2);     -- Assumed ID 5 for Gabriel Rocha
+INSERT INTO MembroDaEquipe (RegimeDeTrabalho, ID_COORDENADOR) VALUES
+('Híbrido', 2),        -- Assumed ID 1 for Ana Clara
+('Presencial', NULL),   -- Assumed ID 2 for Daniela Martins
+('Presencial', 2),    -- Assumed ID 3 for Eduardo Ferreira
+('Remoto', 2), -- Assumed ID 4 for Fernanda Lima
+('Híbrido', 2);     -- Assumed ID 5 for Gabriel Rocha
 
 -- Periodo de Vinculo do Membro
 INSERT INTO PeriodoDeVinculoMembro (ID_MEMBRO, DataDeInicio, DataDeFim) VALUES
