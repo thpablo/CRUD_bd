@@ -190,7 +190,66 @@
 {% endif %}
 
 <script>
-// --- Dynamic Input Adders ---
+// --- Event Listeners ---
+document.getElementById('is_aluno')?.addEventListener('change', (e) => toggleSection('aluno_fields', e.target.checked));
+document.getElementById('is_servidor')?.addEventListener('change', (e) => toggleSection('servidor_fields', e.target.checked));
+document.querySelectorAll('.pcd-checkbox').forEach(cb => cb.addEventListener('change', updatePcdDetailsVisibility));
+document.querySelectorAll('.membro-checkbox').forEach(cb => cb.addEventListener('change', updateMembroDetailsVisibility));
+
+/**
+ * Updates the 'required' attribute on all form elements within a given section.
+ * @param {HTMLElement} section The container element of the section.
+ * @param {boolean} isRequired Whether the fields should be required or not.
+ */
+function updateRequiredAttributes(section, isRequired) {
+    if (!section) return;
+    // Find all inputs that were originally required
+    const inputs = section.querySelectorAll('[data-original-required]');
+    inputs.forEach(input => {
+        input.required = isRequired;
+    });
+}
+
+function toggleSection(sectionId, isVisible) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.style.display = isVisible ? 'block' : 'none';
+        updateRequiredAttributes(section, isVisible);
+    }
+}
+
+function updatePcdDetailsVisibility() {
+    const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => {
+        return cb.offsetParent !== null && cb.checked;
+    });
+    toggleSection('pcd_details', isAnyPcd);
+}
+
+function updateMembroDetailsVisibility() {
+    const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => {
+        return cb.offsetParent !== null && cb.checked;
+    });
+    toggleSection('membro_details', isAnyMembro);
+}
+
+function showServidorSubFields() {
+    const tipo = document.getElementById("tipo_servidor")?.value;
+    document.querySelectorAll('.servidor-sub-section').forEach(sec => {
+        sec.style.display = 'none';
+        updateRequiredAttributes(sec, false);
+    });
+    if (tipo) {
+        const section = document.getElementById(tipo + "_fields");
+        if (section) {
+            section.style.display = "block";
+            updateRequiredAttributes(section, true);
+        }
+    }
+    updatePcdDetailsVisibility();
+    updateMembroDetailsVisibility();
+}
+
+// --- Dynamic Input Adders for Contacts ---
 function addEmailInput() {
     const container = document.getElementById('emails-container');
     const newEntry = document.createElement('div');
@@ -207,8 +266,38 @@ function addTelefoneInput() {
     container.appendChild(newEntry);
 }
 
-// NOTE: The more complex JS for showing/hiding sections from assign_role.html
-// is not included here as this page has a different, simpler structure for roles.
-// If role editing becomes more complex on this page, that script would need to be adapted.
+function addDeficienciaInput() {
+    const container = document.getElementById('deficiencias-container');
+    const newEntry = document.createElement('div');
+    newEntry.className = 'deficiencia-entry';
+    const originalSelect = document.querySelector('[name="deficiencias[]"]');
+    newEntry.innerHTML = `
+        ${originalSelect.outerHTML}
+        <input type="text" name="graus[]" placeholder="Grau (leve, intermediário, severo)">
+        <input type="text" name="observacoes[]" placeholder="Observação">
+        <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    `;
+    container.appendChild(newEntry);
+}
+
+// --- Initial State Setup ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Mark originally required fields and make them not required initially
+    document.querySelectorAll('[required]').forEach(input => {
+        input.setAttribute('data-original-required', 'true');
+        // We don't set to false immediately, we let the toggle functions handle it
+    });
+
+    // Initial setup based on checked status on page load
+    const isAlunoCheckbox = document.getElementById('is_aluno');
+    if (isAlunoCheckbox) {
+        toggleSection('aluno_fields', isAlunoCheckbox.checked);
+    }
+    const isServidorCheckbox = document.getElementById('is_servidor');
+    if (isServidorCheckbox) {
+        toggleSection('servidor_fields', isServidorCheckbox.checked);
+    }
+    showServidorSubFields(); // This also calls the visibility updates for sub-sections
+});
 </script>
 {% endblock %}
