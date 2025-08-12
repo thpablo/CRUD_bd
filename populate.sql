@@ -48,7 +48,7 @@ INSERT INTO Curso (CODIGO, Nome, Modalidade, NivelDeFormacao) VALUES
 INSERT INTO DepartamentoSetor (CODIGO, Nome, Localizacao, Telefone, Email) VALUES
 (201, 'Departamento de Computação', 'ICEB, Sala 12', '3135551000', 'decom@ufop.br'),
 (202, 'Departamento de Engenharia de Produção', 'Escola de Minas, Bloco B', '3135552000', 'depro@ufop.br'),
-(203, 'Departamento de Física', 'ICEB, Sala 13', '3135553000', 'defis@ufop.br');
+(203, 'CAIN', 'Centro de Vivência', '3135553000', 'cain@ufop.br');
 
 -- Cargos
 INSERT INTO Cargo (ID_CARGO, Nome) VALUES

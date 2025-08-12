@@ -7,7 +7,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
 ---
 
 ### `select_all_pessoas.sql`
-- **Onde:** Rota `/pessoas`
+- **Onde:** Rota `/pessoas` (quando não há busca).
 - **O que:** Seleciona todos os registros da tabela `Pessoa` para exibir a lista principal de pessoas.
 - **SQL:**
   ```sql
@@ -15,15 +15,15 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `search_pessoas.sql`
-- **Onde:** Rota `/pessoas` (com parâmetro de busca)
-- **O que:** Filtra os registros da tabela `Pessoa` onde o nome ou CPF correspondem ao termo de busca.
+- **Onde:** Rota `/pessoas` (com parâmetro de busca `q`).
+- **O que:** Filtra os registros da tabela `Pessoa` onde o nome (case-insensitive) ou CPF correspondem ao termo de busca.
 - **SQL:**
   ```sql
   SELECT cpf, nome FROM Pessoa WHERE nome ILIKE :query OR cpf LIKE :query ORDER BY nome;
   ```
 
 ### `select_all_cursos.sql`
-- **Onde:** Rota `/cursos`
+- **Onde:** Rota `/cursos`.
 - **O que:** Seleciona todos os cursos cadastrados para exibi-los na página de cursos.
 - **SQL:**
   ```sql
@@ -31,7 +31,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_alunos_by_curso.sql`
-- **Onde:** Rota `/curso/<codigo_curso>`
+- **Onde:** Rota `/curso/<codigo_curso>`.
 - **O que:** Utiliza `JOIN` para buscar o nome e a matrícula de todos os alunos inscritos em um curso específico.
 - **SQL:**
   ```sql
@@ -44,7 +44,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_all_alunos_info.sql`
-- **Onde:** Rota `/equipe`
+- **Onde:** Rota `/equipe`.
 - **O que:** Busca uma lista detalhada de todos os alunos, incluindo o nome do curso em que estão matriculados.
 - **SQL:**
   ```sql
@@ -61,7 +61,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_all_membros_equipe_info.sql`
-- **Onde:** Rota `/equipe`
+- **Onde:** Rota `/equipe`.
 - **O que:** Gera uma lista unificada de todos os membros da equipe CAIN, usando `UNION` para juntar os resultados de Alunos, Técnicos e Terceirizados que são membros.
 - **SQL:**
   ```sql
@@ -80,7 +80,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_all_servidores_info.sql`
-- **Onde:** Rota `/equipe`
+- **Onde:** Rota `/equipe`.
 - **O que:** Retorna uma lista detalhada de todos os servidores, incluindo seu tipo de contrato, departamento, papel específico (Docente, Técnico, etc.), SIAPE e cargo.
 - **SQL:**
   ```sql
@@ -105,7 +105,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_all_bolsistas_info.sql`
-- **Onde:** Rota `/equipe`
+- **Onde:** Rota `/equipe`.
 - **O que:** Retorna uma lista detalhada de todos os bolsistas, usando `JOIN` e `CASE` para determinar o tipo da bolsa.
 - **SQL:**
   ```sql
@@ -128,7 +128,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `relatorio_geral_pcd.sql`
-- **Onde:** Rota `/relatorio/pcd`
+- **Onde:** Rota `/relatorio/pcd`.
 - **O que:** Gera um relatório de todas as pessoas com deficiência (PCD), identificando seu papel principal através de `UNION`.
 - **SQL:**
   ```sql
@@ -147,7 +147,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `select_person_details_for_role_assignment.sql`
-- **Onde:** Rota `/assign_role`
+- **Onde:** Rota `/assign_role`.
 - **O que:** Busca todos os detalhes de uma pessoa por CPF para verificar seus papéis atuais antes de uma nova atribuição.
 - **SQL:**
   ```sql
@@ -170,7 +170,7 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
   ```
 
 ### `report_pcd_students_by_assistance.sql`
-- **Onde:** Rota `/relatorios/alunos_assistidos`
+- **Onde:** Rota `/relatorios/alunos_assistidos`.
 - **O que:** Gera um relatório de alunos PCD de um curso específico que receberam assistência de um tipo específico de bolsista.
 - **SQL:**
   ```sql
@@ -205,12 +205,12 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
 ---
 
 ### `update_person_nome.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Altera o nome de uma pessoa com base no seu CPF.
 - **SQL:** `UPDATE Pessoa SET nome = :nome WHERE cpf = :cpf;`
 
 ### `update_pessoa_lgbt.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Altera o nome social de uma pessoa na tabela `PessoaLGBT`.
 - **SQL:** `UPDATE PessoaLGBT SET nomesocial = :nomesocial WHERE cpf = :cpf;`
 
@@ -219,22 +219,22 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
 ---
 
 ### `delete_person.sql`
-- **Onde:** Rota `/pessoa/delete/<cpf>`
+- **Onde:** Rota `/pessoa/delete/<cpf>`.
 - **O que:** Remove um registro da tabela `Pessoa`.
 - **SQL:** `DELETE FROM Pessoa WHERE cpf = :cpf;`
 
 ### `delete_person_emails.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Remove todos os e-mails associados a um CPF.
 - **SQL:** `DELETE FROM ContatoEmails WHERE cpf = :cpf;`
 
 ### `delete_person_telefones.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Remove todos os telefones associados a um CPF.
 - **SQL:** `DELETE FROM ContatoTelefones WHERE cpf = :cpf;`
 
 ### `delete_pessoa_lgbt.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Remove o registro de nome social de uma pessoa.
 - **SQL:** `DELETE FROM PessoaLGBT WHERE cpf = :cpf;`
 
@@ -243,16 +243,16 @@ Este documento detalha as consultas e operações SQL puras implementadas no sis
 ---
 
 ### `insert_person_email.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Insere um novo registro de e-mail para uma pessoa.
 - **SQL:** `INSERT INTO ContatoEmails (cpf, email) VALUES (:cpf, :email);`
 
 ### `insert_person_telefone.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Insere um novo registro de telefone para uma pessoa.
 - **SQL:** `INSERT INTO ContatoTelefones (cpf, telefone) VALUES (:cpf, :telefone);`
 
 ### `insert_pessoa_lgbt.sql`
-- **Onde:** Rota `/pessoa/edit/<cpf>`
+- **Onde:** Rota `/pessoa/edit/<cpf>`.
 - **O que:** Insere um novo registro de nome social para uma pessoa.
 - **SQL:** `INSERT INTO PessoaLGBT (cpf, nomesocial) VALUES (:cpf, :nomesocial);`
