@@ -151,6 +151,23 @@ def relatorio_pcd():
     pcds = result.mappings().all()
     return render_template('relatorio_pcd.html', pcds=pcds)
 
+@app.route('/relatorios/alunos_assistidos', methods=['GET'])
+def relatorio_alunos_assistidos():
+    cursos = Curso.query.order_by(Curso.nome).all()
+    resultados = []
+
+    codigo_curso = request.args.get('codigo_curso')
+    tipo_bolsista = request.args.get('tipo_bolsista')
+
+    if codigo_curso and tipo_bolsista:
+        sql_query = get_sql_from_file('report_pcd_students_by_assistance.sql')
+        params = {'codigo_curso': int(codigo_curso), 'tipo_bolsista': tipo_bolsista}
+        result = db.session.execute(text(sql_query), params)
+        resultados = result.mappings().all()
+
+    return render_template('relatorio_alunos_assistidos.html', cursos=cursos, resultados=resultados)
+
+
 @app.route('/equipe')
 def equipe_info():
     # Query for all students info
