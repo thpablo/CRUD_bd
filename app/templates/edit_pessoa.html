@@ -184,18 +184,20 @@
     <!-- Seção Detalhes Membro CAIN -->
     <div id="membro_details" class="dynamic-section" style="display:none;">
         <h3>Detalhes do Membro da Equipe CAIN</h3>
+        {% set membro_record = (pessoa.aluno.membro_equipe if pessoa.aluno else None) or (pessoa.servidor.tecnico.membro_equipe if pessoa.servidor and pessoa.servidor.tecnico else None) or (pessoa.servidor.terceirizado.membro_equipe if pessoa.servidor and pessoa.servidor.terceirizado else None) %}
+        {% set vinculo = membro_record.periodos_vinculo[0] if membro_record and membro_record.periodos_vinculo else None %}
         <div>
             <label for="regimedetrabalho">Regime de Trabalho: *</label>
-            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido" required>
+            <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido" value="{{ membro_record.regimedetrabalho if membro_record else '' }}" required>
         </div>
         <h4>Período de Vínculo</h4>
         <div>
             <label for="datadeinicio">Data de Início:</label>
-            <input type="date" id="datadeinicio" name="datadeinicio">
+            <input type="date" id="datadeinicio" name="datadeinicio" value="{{ vinculo.datadeinicio.strftime('%Y-%m-%d') if vinculo and vinculo.datadeinicio else '' }}">
         </div>
         <div>
             <label for="datadefim">Data de Término:</label>
-            <input type="date" id="datadefim" name="datadefim">
+            <input type="date" id="datadefim" name="datadefim" value="{{ vinculo.datadefim.strftime('%Y-%m-%d') if vinculo and vinculo.datadefim else '' }}">
         </div>
     </div>
 

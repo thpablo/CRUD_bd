@@ -288,6 +288,60 @@ def edit_pessoa(cpf):
                 pcd_to_delete = PCD.query.get(existing_pcd_id)
                 db.session.delete(pcd_to_delete)
 
+            # --- Handle Membro da Equipe ---
+            is_membro = any([
+                request.form.get('is_aluno_membro'),
+                request.form.get('is_tecnico_membro'),
+                (pessoa.servidor and pessoa.servidor.terceirizado) # Terceirizados are always members
+            ])
+
+            existing_membro_id = None
+            if pessoa.aluno and pessoa.aluno.id_membro:
+                existing_membro_id = pessoa.aluno.id_membro
+            elif pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.id_membro:
+                existing_membro_id = pessoa.servidor.tecnico.id_membro
+            elif pessoa.servidor and pessoa.servidor.terceirizado and pessoa.servidor.terceirizado.id_membro:
+                existing_membro_id = pessoa.servidor.terceirizado.id_membro
+
+            if is_membro:
+                membro_obj = None
+                if existing_membro_id:
+                    membro_obj = MembroDaEquipe.query.get(existing_membro_id)
+                    membro_obj.regimedetrabalho = request.form.get('regimedetrabalho')
+                    # Clean old vinculo data
+                    for old_vinculo in membro_obj.periodos_vinculo:
+                        db.session.delete(old_vinculo)
+                    db.session.flush()
+                else:
+                    membro_obj = MembroDaEquipe(regimedetrabalho=request.form.get('regimedetrabalho'))
+                    db.session.add(membro_obj)
+                    db.session.flush()
+
+                # Add new vinculo data
+                if request.form.get('datadeinicio'):
+                    vinculo = PeriodoDeVinculoMembro(
+                        id_membro=membro_obj.id_membro,
+                        datadeinicio=request.form.get('datadeinicio'),
+                        datadefim=request.form.get('datadefim') or None
+                    )
+                    db.session.add(vinculo)
+
+                # Link the Membro object to the role
+                if request.form.get('is_aluno_membro') and pessoa.aluno:
+                    pessoa.aluno.id_membro = membro_obj.id_membro
+                if request.form.get('is_tecnico_membro') and pessoa.servidor and pessoa.servidor.tecnico:
+                    pessoa.servidor.tecnico.id_membro = membro_obj.id_membro
+                if pessoa.servidor and pessoa.servidor.terceirizado:
+                    pessoa.servidor.terceirizado.id_membro = membro_obj.id_membro
+
+            elif existing_membro_id:
+                if pessoa.aluno and pessoa.aluno.id_membro == existing_membro_id:
+                    pessoa.aluno.id_membro = None
+                if pessoa.servidor and pessoa.servidor.tecnico and pessoa.servidor.tecnico.id_membro == existing_membro_id:
+                    pessoa.servidor.tecnico.id_membro = None
+
+                membro_to_delete = MembroDaEquipe.query.get(existing_membro_id)
+                db.session.delete(membro_to_delete)
 
             db.session.commit()
             flash('Pessoa atualizada com sucesso!', 'success')
