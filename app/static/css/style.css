@@ -297,3 +297,39 @@ td.actions form {
     box-shadow: none;
     background-color: transparent;
 }
+
+/* --- Dashboard / Home Page Styling --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 25px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: var(--black);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--wine-red);
+    font-size: 1.4em;
+}
+
+.card p {
+    color: var(--dark-gray);
+    font-size: 0.95em;
+}
