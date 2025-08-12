@@ -5,19 +5,40 @@
 {% block content %}
   <h1>Pessoas</h1>
 
-  <form action="{{ url_for('pessoas') }}" method="get">
-    <input type="text" name="q" placeholder="Search...">
-    <button type="submit">Search</button>
-  </form>
+  <div class="actions-bar">
+      <form action="{{ url_for('pessoas') }}" method="get" class="search-form">
+          <input type="text" name="q" placeholder="Buscar por nome ou CPF..." value="{{ request.args.get('q', '') }}">
+          <button type="submit">Buscar</button>
+      </form>
+      <a href="{{ url_for('add_pessoa') }}" class="button">Adicionar Nova Pessoa</a>
+  </div>
 
-  <ul>
-    {% for pessoa in pessoas %}
-      <li>
-        <a href="{{ url_for('edit_pessoa', cpf=pessoa.cpf) }}">{{ pessoa.nome }}</a>
-        <span>{{ pessoa.cpf }}</span>
-      </li>
-    {% endfor %}
-  </ul>
-
-  <a href="{{ url_for('add_pessoa') }}">Add Pessoa</a>
+  <table>
+      <thead>
+          <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th style="width: 280px;">Ações</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for pessoa in pessoas %}
+            <tr>
+              <td>{{ pessoa.nome }}</td>
+              <td>{{ pessoa.cpf }}</td>
+              <td class="actions">
+                  <a href="{{ url_for('edit_pessoa', cpf=pessoa.cpf) }}" class="button">Editar</a>
+                  <a href="{{ url_for('assign_role', search_cpf=pessoa.cpf) }}" class="button">Atribuir Papel</a>
+                  <form action="{{ url_for('delete_pessoa', cpf=pessoa.cpf) }}" method="post" onsubmit="return confirm('Tem certeza que deseja remover esta pessoa? Esta ação não pode ser desfeita.');">
+                      <button type="submit" class="button danger">Remover</button>
+                  </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+                <td colspan="3">Nenhuma pessoa encontrada.</td>
+            </tr>
+          {% endfor %}
+      </tbody>
+  </table>
 {% endblock %}

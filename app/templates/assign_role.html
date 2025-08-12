@@ -18,14 +18,31 @@
 <hr>
 <h2>Atribuindo Papel para: {{ pessoa.nome }} (CPF: {{ pessoa.cpf }})</h2>
 
+<div class="form-section">
+    <h3>Funções Atuais:</h3>
+    {% if not pessoa.is_aluno and not pessoa.is_servidor %}
+        <p>Nenhuma função atribuída atualmente.</p>
+    {% else %}
+        <ul>
+            {% if pessoa.is_aluno %}
+                <li>Aluno {% if pessoa.is_membro_cain %}(Membro da Equipe CAIN){% endif %}</li>
+            {% endif %}
+            {% if pessoa.is_servidor %}
+                <li>Servidor ({{ pessoa.servidor_tipo }}) {% if pessoa.is_membro_cain %}(Membro da Equipe CAIN){% endif %}</li>
+            {% endif %}
+        </ul>
+    {% endif %}
+</div>
+<hr>
+
 <form action="{{ url_for('assign_role') }}" method="post">
     <input type="hidden" name="cpf" value="{{ pessoa.cpf }}">
 
     <div class="form-section">
         <h2>Selecione o(s) Vínculo(s)</h2>
-        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.aluno %}disabled{% endif %}> É Aluno?</label>
-        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.servidor %}disabled{% endif %}> É Servidor?</label>
-        {% if pessoa.aluno or pessoa.servidor %}
+        <label><input type="checkbox" id="is_aluno" name="is_aluno" value="true" {% if pessoa.is_aluno %}disabled{% endif %}> É Aluno?</label>
+        <label><input type="checkbox" id="is_servidor" name="is_servidor" value="true" {% if pessoa.is_servidor %}disabled{% endif %}> É Servidor?</label>
+        {% if pessoa.is_aluno or pessoa.is_servidor %}
             <p><small><i>Papéis já existentes não podem ser modificados nesta tela.</i></small></p>
         {% endif %}
     </div>
@@ -37,7 +54,7 @@
         <label><input type="checkbox" id="is_aluno_membro" name="is_aluno_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
         <div>
             <label for="matricula">Matrícula: *</label>
-            <input type="text" id="matricula" name="matricula" required>
+            <input type="text" id="matricula" name="matricula" required maxlength="9">
         </div>
         <div>
             <label for="codigo_curso">Curso: *</label>
@@ -77,7 +94,7 @@
             <label><input type="checkbox" id="is_docente_pcd" name="is_docente_pcd" class="pcd-checkbox" checked disabled> É PCD (Obrigatório)</label>
             <div>
                 <label for="siape_docente">SIAPE: *</label>
-                <input type="text" id="siape_docente" name="siape_docente" required>
+                <input type="text" id="siape_docente" name="siape_docente" required maxlength="8">
             </div>
         </div>
 
@@ -87,7 +104,7 @@
             <label><input type="checkbox" id="is_tecnico_membro" name="is_tecnico_membro" class="membro-checkbox"> É Membro da Equipe CAIN?</label>
             <div>
                 <label for="siape_tecnico">SIAPE: *</label>
-                <input type="text" id="siape_tecnico" name="siape_tecnico" required>
+                <input type="text" id="siape_tecnico" name="siape_tecnico" required maxlength="8">
             </div>
             <div>
                 <label for="id_cargo_tecnico">Cargo:</label>
@@ -133,10 +150,6 @@
             <label for="regimedetrabalho">Regime de Trabalho: *</label>
             <input type="text" id="regimedetrabalho" name="regimedetrabalho" placeholder="Presencial, a distância ou híbrido" required>
         </div>
-        <div>
-            <label for="categoria_membro">Categoria:</label>
-            <input type="text" id="categoria_membro" name="categoria_membro">
-        </div>
         <h4>Período de Vínculo</h4>
         <div>
             <label for="datadeinicio">Data de Início:</label>
@@ -161,16 +174,32 @@ document.getElementById('is_servidor')?.addEventListener('change', (e) => toggle
 document.querySelectorAll('.pcd-checkbox').forEach(cb => cb.addEventListener('change', updatePcdDetailsVisibility));
 document.querySelectorAll('.membro-checkbox').forEach(cb => cb.addEventListener('change', updateMembroDetailsVisibility));
 
+/**
+ * Updates the 'required' attribute on all form elements within a given section.
+ * @param {HTMLElement} section The container element of the section.
+ * @param {boolean} isRequired Whether the fields should be required or not.
+ */
+function updateRequiredAttributes(section, isRequired) {
+    if (!section) return;
+    const inputs = section.querySelectorAll('input[name], select[name], textarea[name]');
+    inputs.forEach(input => {
+        // Only modify inputs that were originally required
+        if (input.hasAttribute('data-original-required')) {
+            input.required = isRequired;
+        }
+    });
+}
+
 function toggleSection(sectionId, isVisible) {
     const section = document.getElementById(sectionId);
     if (section) {
         section.style.display = isVisible ? 'block' : 'none';
+        updateRequiredAttributes(section, isVisible);
     }
 }
 
 function updatePcdDetailsVisibility() {
     const isAnyPcd = Array.from(document.querySelectorAll('.pcd-checkbox')).some(cb => {
-        // A checkbox is only considered if it's visible (its offsetParent is not null) and checked.
         return cb.offsetParent !== null && cb.checked;
     });
     toggleSection('pcd_details', isAnyPcd);
@@ -178,7 +207,6 @@ function updatePcdDetailsVisibility() {
 
 function updateMembroDetailsVisibility() {
     const isAnyMembro = Array.from(document.querySelectorAll('.membro-checkbox')).some(cb => {
-        // A checkbox is only considered if it's visible (its offsetParent is not null) and checked.
         return cb.offsetParent !== null && cb.checked;
     });
     toggleSection('membro_details', isAnyMembro);
@@ -186,11 +214,15 @@ function updateMembroDetailsVisibility() {
 
 function showServidorSubFields() {
     const tipo = document.getElementById("tipo_servidor")?.value;
-    document.querySelectorAll('.servidor-sub-section').forEach(sec => sec.style.display = 'none');
+    document.querySelectorAll('.servidor-sub-section').forEach(sec => {
+        sec.style.display = 'none';
+        updateRequiredAttributes(sec, false);
+    });
     if (tipo) {
         const section = document.getElementById(tipo + "_fields");
         if (section) {
             section.style.display = "block";
+            updateRequiredAttributes(section, true);
         }
     }
     updatePcdDetailsVisibility();
@@ -214,6 +246,13 @@ function addDeficienciaInput() {
 
 // --- Initial State Setup ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Mark originally required fields and make them not required initially
+    document.querySelectorAll('[required]').forEach(input => {
+        input.setAttribute('data-original-required', 'true');
+        input.required = false;
+    });
+
+    // Initial setup
     const isAlunoCheckbox = document.getElementById('is_aluno');
     if (isAlunoCheckbox) {
         toggleSection('aluno_fields', isAlunoCheckbox.checked);
@@ -222,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isServidorCheckbox) {
         toggleSection('servidor_fields', isServidorCheckbox.checked);
     }
-    showServidorSubFields();
+    showServidorSubFields(); // This also calls the visibility updates
 });
 </script>
 {% endblock %}

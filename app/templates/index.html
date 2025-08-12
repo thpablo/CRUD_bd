@@ -1,16 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
-
 {% block content %}
-  <h1>Bem-vindo ao Sistema de Gestão da CAIN</h1>
-  <p>Este sistema foi desenvolvido para gerenciar as informações e atividades da Coordenadoria de Acessibilidade e Inclusão (CAIN) da Universidade Federal de Ouro Preto.</p>
-  <p>Utilize a navegação acima para acessar as diferentes seções:</p>
-  <ul>
-    <li><strong><a href="{{ url_for('pessoas') }}">Pessoas</a>:</strong> Visualize e gerencie os dados de todos os indivíduos no sistema.</li>
-    <li><strong><a href="{{ url_for('add_pessoa') }}">Adicionar Pessoa</a>:</strong> Cadastre as informações básicas de um novo indivíduo.</li>
-    <li><strong><a href="{{ url_for('assign_role') }}">Atribuir Papel</a>:</strong> Adicione os papéis de Aluno ou Servidor a uma pessoa já cadastrada.</li>
-    <li><strong><a href="{{ url_for('cursos') }}">Cursos</a>:</strong> Gerencie os cursos oferecidos.</li>
-    <li><strong><a href="{{ url_for('departamentos') }}">Departamentos</a>:</strong> Gerencie os departamentos e setores da universidade.</li>
-  </ul>
+  <div style="text-align: center; margin-bottom: 30px;">
+      <h1>Bem-vindo ao Sistema de Gerenciamento do CAIN</h1>
+      <p>Selecione uma das opções abaixo para começar.</p>
+  </div>
+
+  <div class="dashboard-grid">
+    <a href="{{ url_for('pessoas') }}" class="card">
+      <h3>Gerenciar Pessoas</h3>
+      <p>Adicione, edite, remova e atribua papéis às pessoas.</p>
+    </a>
+    <a href="{{ url_for('cursos') }}" class="card">
+      <h3>Gerenciar Cursos</h3>
+      <p>Adicione e visualize os cursos da instituição.</p>
+    </a>
+    <a href="{{ url_for('departamentos') }}" class="card">
+      <h3>Gerenciar Departamentos</h3>
+      <p>Adicione e visualize os departamentos.</p>
+    </a>
+    <a href="{{ url_for('equipe_info') }}" class="card">
+      <h3>Informações da Equipe</h3>
+      <p>Visualize relatórios sobre alunos, servidores e membros da equipe.</p>
+    </a>
+    <a href="{{ url_for('relatorio_pcd') }}" class="card">
+        <h3>Relatório Geral de PCD</h3>
+        <p>Veja uma lista de todas as pessoas com deficiência.</p>
+    </a>
+    <a href="{{ url_for('relatorio_alunos_assistidos') }}" class="card">
+        <h3>Relatório de Alunos Assistidos</h3>
+        <p>Filtre alunos PCD que receberam assistência de bolsistas.</p>
+    </a>
+  </div>
 {% endblock %}

@@ -134,7 +134,6 @@ class MembroDaEquipe(db.Model):
     __tablename__ = 'membrodaequipe'
     id_membro = Column(Integer, primary_key=True)
     regimedetrabalho = Column(String(100), nullable=False)
-    categoria = Column(String(100))
     id_coordenador = Column(Integer, ForeignKey('membrodaequipe.id_membro'))
     coordenador = relationship('MembroDaEquipe', remote_side=[id_membro], backref='equipe_coordenada')
     tecnico_administrativo = relationship('TecnicoAdministrativo', back_populates='membro_equipe', uselist=False)

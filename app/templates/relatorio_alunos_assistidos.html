@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatório de Alunos Assistidos{% endblock %}
+
+{% block content %}
+  <h1>Relatório de Alunos PCD Assistidos por Bolsistas</h1>
+  <p>Filtre para ver quais alunos PCD de um curso específico receberam assistência de um determinado tipo de bolsista.</p>
+
+  <form method="get" action="{{ url_for('relatorio_alunos_assistidos') }}" class="form-section report-form">
+      <div>
+          <label for="codigo_curso">Selecione o Curso:</label>
+          <select id="codigo_curso" name="codigo_curso" required>
+              <option value="">Todos os Cursos</option>
+              {% for curso in cursos %}
+                  <option value="{{ curso.codigo }}" {% if curso.codigo|string == request.args.get('codigo_curso') %}selected{% endif %}>
+                      {{ curso.nome }}
+                  </option>
+              {% endfor %}
+          </select>
+      </div>
+      <div>
+          <label for="tipo_bolsista">Selecione o Tipo de Bolsista:</label>
+          <select id="tipo_bolsista" name="tipo_bolsista" required>
+              <option value="">Ambos os Tipos</option>
+              <option value="inclusao" {% if 'inclusao' == request.args.get('tipo_bolsista') %}selected{% endif %}>Inclusão</option>
+              <option value="producao" {% if 'producao' == request.args.get('tipo_bolsista') %}selected{% endif %}>Produção</option>
+          </select>
+      </div>
+      <button type="submit">Gerar Relatório</button>
+  </form>
+
+  <div class="report-section">
+    <h2>Resultados</h2>
+    {% if resultados %}
+      <table>
+          <thead>
+              <tr>
+                  <th>Nome do Aluno</th>
+                  <th>CPF</th>
+                  <th>Curso</th>
+                  <th>Atendido por Bolsista de</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for resultado in resultados %}
+                <tr>
+                  <td>{{ resultado.nomealuno }}</td>
+                  <td>{{ resultado.cpf }}</td>
+                  <td>{{ resultado.nomecurso }}</td>
+                  <td>{{ resultado.tipobolsista }}</td>
+                </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    {% elif request.args.get('codigo_curso') and request.args.get('tipo_bolsista') %}
+      <p>Nenhum resultado encontrado para os filtros selecionados.</p>
+    {% else %}
+      <p>Por favor, selecione os filtros e clique em "Gerar Relatório" para ver os resultados.</p>
+    {% endif %}
+  </div>
+
+{% endblock %}

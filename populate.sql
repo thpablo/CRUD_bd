@@ -1,42 +1,3 @@
--- Clean up existing data to ensure a fresh start
--- The order is important to avoid foreign key constraint violations
-DELETE FROM PrestaAssistencia;
-DELETE FROM MaterialDisponibilizado;
-DELETE FROM EmprestimoMaterial;
-DELETE FROM MatriculadoEm;
-DELETE FROM TabelaFuncoes;
-DELETE FROM Relatorios;
-DELETE FROM Horarios;
-DELETE FROM BolsistaInclusao;
-DELETE FROM BolsistaProducao;
-DELETE FROM MaterialAcessivel;
-DELETE FROM CategoriaMaterial;
-DELETE FROM Bolsista;
-DELETE FROM Estagiario;
-DELETE FROM Docente;
-DELETE FROM TecnicoAdministrativo;
-DELETE FROM Terceirizado;
-DELETE FROM Aluno;
-DELETE FROM Servidor;
-DELETE FROM PeriodoDeVinculoMembro;
-DELETE FROM MembroDaEquipe;
-DELETE FROM PeriodoDeVinculoPCD;
-DELETE FROM DadosDeficienciaPCD;
-DELETE FROM PCD;
-DELETE FROM PessoaLGBT;
-DELETE FROM ContatoEmails;
-DELETE FROM ContatoTelefones;
-DELETE FROM Pessoa;
-DELETE FROM Curso;
-DELETE FROM DepartamentoSetor;
-DELETE FROM Cargo;
-DELETE FROM Deficiencia;
-DELETE FROM Acao;
-DELETE FROM TecnologiaEmprestavel;
-DELETE FROM Tecnologia;
-DELETE FROM CategoriaTecnologia;
-
-
 -- Independent entities first
 -- Cursos
 INSERT INTO Curso (CODIGO, Nome, Modalidade, NivelDeFormacao) VALUES
@@ -48,7 +9,7 @@ INSERT INTO Curso (CODIGO, Nome, Modalidade, NivelDeFormacao) VALUES
 INSERT INTO DepartamentoSetor (CODIGO, Nome, Localizacao, Telefone, Email) VALUES
 (201, 'Departamento de Computação', 'ICEB, Sala 12', '3135551000', 'decom@ufop.br'),
 (202, 'Departamento de Engenharia de Produção', 'Escola de Minas, Bloco B', '3135552000', 'depro@ufop.br'),
-(203, 'CAIN', 'Centro de Vivência', '3135553000', 'cain@ufop.br');
+(203, 'Departamento de Física', 'ICEB, Sala 13', '3135553000', 'defis@ufop.br');
 
 -- Cargos
 INSERT INTO Cargo (ID_CARGO, Nome) VALUES
@@ -138,12 +99,12 @@ INSERT INTO DadosDeficienciaPCD (ID_PCD, ID_DEFICIENCIA, Grau, Observacoes) VALU
 
 -- Membros da Equipe (IDs will be generated automatically)
 -- Assuming IDs start from 1.
-INSERT INTO MembroDaEquipe (RegimeDeTrabalho, Categoria, ID_COORDENADOR) VALUES
-('Híbrido', 'Apoio Discente', 2),        -- Assumed ID 1 for Ana Clara
-('Presencial', 'Coordenação', NULL),   -- Assumed ID 2 for Daniela Martins
-('Presencial', 'Apoio Externo', 2),    -- Assumed ID 3 for Eduardo Ferreira
-('Remoto', 'Produção de Material', 2), -- Assumed ID 4 for Fernanda Lima
-('Híbrido', 'Desenvolvimento', 2);     -- Assumed ID 5 for Gabriel Rocha
+INSERT INTO MembroDaEquipe (RegimeDeTrabalho, ID_COORDENADOR) VALUES
+('Híbrido', 2),        -- Assumed ID 1 for Ana Clara
+('Presencial', NULL),   -- Assumed ID 2 for Daniela Martins
+('Presencial', 2),    -- Assumed ID 3 for Eduardo Ferreira
+('Remoto', 2), -- Assumed ID 4 for Fernanda Lima
+('Híbrido', 2);     -- Assumed ID 5 for Gabriel Rocha
 
 -- Periodo de Vinculo do Membro
 INSERT INTO PeriodoDeVinculoMembro (ID_MEMBRO, DataDeInicio, DataDeFim) VALUES

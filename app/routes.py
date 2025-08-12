@@ -21,8 +21,16 @@ def index():
 
 @app.route('/pessoas')
 def pessoas():
-    sql_query = get_sql_from_file('select_all_pessoas.sql')
-    result = db.session.execute(text(sql_query))
+    search_term = request.args.get('q')
+    if search_term:
+        sql_query = get_sql_from_file('search_pessoas.sql')
+        # Add wildcards for LIKE/ILIKE search
+        query_param = f"%{search_term}%"
+        result = db.session.execute(text(sql_query), {'query': query_param})
+    else:
+        sql_query = get_sql_from_file('select_all_pessoas.sql')
+        result = db.session.execute(text(sql_query))
+
     all_pessoas = result.mappings().all()
     return render_template('pessoas.html', pessoas=all_pessoas)
 
@@ -143,6 +151,23 @@ def relatorio_pcd():
     pcds = result.mappings().all()
     return render_template('relatorio_pcd.html', pcds=pcds)
 
+@app.route('/relatorios/alunos_assistidos', methods=['GET'])
+def relatorio_alunos_assistidos():
+    cursos = Curso.query.order_by(Curso.nome).all()
+    resultados = []
+
+    codigo_curso = request.args.get('codigo_curso')
+    tipo_bolsista = request.args.get('tipo_bolsista')
+
+    if codigo_curso and tipo_bolsista:
+        sql_query = get_sql_from_file('report_pcd_students_by_assistance.sql')
+        params = {'codigo_curso': int(codigo_curso), 'tipo_bolsista': tipo_bolsista}
+        result = db.session.execute(text(sql_query), params)
+        resultados = result.mappings().all()
+
+    return render_template('relatorio_alunos_assistidos.html', cursos=cursos, resultados=resultados)
+
+
 @app.route('/equipe')
 def equipe_info():
     # Query for all students info
@@ -157,69 +182,67 @@ def equipe_info():
     sql_bolsistas = get_sql_from_file('select_all_bolsistas_info.sql')
     bolsistas = db.session.execute(text(sql_bolsistas)).mappings().all()
 
-    return render_template('equipe_info.html', alunos=alunos, membros_equipe=membros_equipe, bolsistas=bolsistas)
+    # Query for all servers info
+    sql_servidores = get_sql_from_file('select_all_servidores_info.sql')
+    servidores = db.session.execute(text(sql_servidores)).mappings().all()
+
+    return render_template('equipe_info.html', alunos=alunos, membros_equipe=membros_equipe, bolsistas=bolsistas, servidores=servidores)
 
 @app.route('/pessoa/edit/<string:cpf>', methods=['GET', 'POST'])
 def edit_pessoa(cpf):
+    # GET Request: Fetch person data using the ORM for display convenience
     pessoa = Pessoa.query.get_or_404(cpf)
 
     if request.method == 'POST':
         try:
-            # Update basic info
-            pessoa.nome = request.form.get('nome')
+            # 1. Update Pessoa.Nome
+            nome = request.form.get('nome')
+            sql_update_nome = get_sql_from_file('update_person_nome.sql')
+            db.session.execute(text(sql_update_nome), {'nome': nome, 'cpf': cpf})
 
-            # Update LGBT Info
+            # 2. Update PessoaLGBT (Nome Social)
+            # This requires checking if a record exists first.
             nomesocial = request.form.get('nomesocial')
-            if nomesocial and not pessoa.lgbt_info:
-                pessoa.lgbt_info = PessoaLGBT(nomesocial=nomesocial)
-            elif nomesocial and pessoa.lgbt_info:
-                pessoa.lgbt_info.nomesocial = nomesocial
-            elif not nomesocial and pessoa.lgbt_info:
-                db.session.delete(pessoa.lgbt_info)
+            existing_lgbt = PessoaLGBT.query.get(cpf)
 
-            # Update Contacts (simple delete and re-add strategy)
-            for email in pessoa.emails:
-                db.session.delete(email)
-            for telefone in pessoa.telefones:
-                db.session.delete(telefone)
+            if nomesocial:
+                if existing_lgbt:
+                    # Update existing
+                    sql_update_lgbt = get_sql_from_file('update_pessoa_lgbt.sql')
+                    db.session.execute(text(sql_update_lgbt), {'nomesocial': nomesocial, 'cpf': cpf})
+                else:
+                    # Insert new
+                    sql_insert_lgbt = get_sql_from_file('insert_pessoa_lgbt.sql')
+                    db.session.execute(text(sql_insert_lgbt), {'cpf': cpf, 'nomesocial': nomesocial})
+            elif existing_lgbt:
+                # Delete if field is cleared
+                sql_delete_lgbt = get_sql_from_file('delete_pessoa_lgbt.sql')
+                db.session.execute(text(sql_delete_lgbt), {'cpf': cpf})
 
+            # 3. Update Contacts (Delete all then re-insert)
+            # Delete all existing emails for the person
+            sql_delete_emails = get_sql_from_file('delete_person_emails.sql')
+            db.session.execute(text(sql_delete_emails), {'cpf': cpf})
+
+            # Insert all emails from the form
+            sql_insert_email = get_sql_from_file('insert_person_email.sql')
             for email_form in request.form.getlist('emails[]'):
                 if email_form:
-                    pessoa.emails.append(ContatoEmails(email=email_form))
+                    db.session.execute(text(sql_insert_email), {'cpf': cpf, 'email': email_form})
+
+            # Delete all existing phones for the person
+            sql_delete_telefones = get_sql_from_file('delete_person_telefones.sql')
+            db.session.execute(text(sql_delete_telefones), {'cpf': cpf})
+
+            # Insert all phones from the form
+            sql_insert_telefone = get_sql_from_file('insert_person_telefone.sql')
             for telefone_form in request.form.getlist('telefones[]'):
                 if telefone_form:
-                    pessoa.telefones.append(ContatoTelefones(telefone=telefone_form))
+                    db.session.execute(text(sql_insert_telefone), {'cpf': cpf, 'telefone': telefone_form})
 
-            # --- Handle Roles (Aluno, Servidor) ---
-            # This logic can get very complex. It needs to handle creation, update, and deletion.
-
-            # Handle Aluno Role
-            is_aluno_form = request.form.get('is_aluno')
-            if is_aluno_form and not pessoa.aluno:
-                # Create Aluno role
-                aluno_obj = Aluno(matricula=request.form.get('matricula'))
-                pessoa.aluno = aluno_obj
-                # Note: This doesn't handle PCD/Membro status yet. That's a further complexity.
-            elif is_aluno_form and pessoa.aluno:
-                # Update Aluno role
-                pessoa.aluno.matricula = request.form.get('matricula')
-            elif not is_aluno_form and pessoa.aluno:
-                # Delete Aluno role
-                db.session.delete(pessoa.aluno)
-
-            # Handle Servidor Role (simplified for now)
-            is_servidor_form = request.form.get('is_servidor')
-            if is_servidor_form and not pessoa.servidor:
-                # Create Servidor role - logic would be similar to assign_role
-                flash('A criação de novos papéis de servidor deve ser feita na tela "Atribuir Papel".', 'warning')
-            elif not is_servidor_form and pessoa.servidor:
-                # Delete Servidor role
-                db.session.delete(pessoa.servidor)
-
-            # A full implementation would need to handle all sub-roles (Docente, etc.)
-            # and PCD/Membro statuses, which is extremely complex for a single update function.
-            # The current implementation is a simplified version focusing on basic updates.
-
+            # Role, PCD, and Membro da Equipe management has been removed from this route.
+            # This page is now only for editing basic personal data (name, contacts, social name).
+            # All role-based assignments should be handled via the "Atribuir Papel" page.
             db.session.commit()
             flash('Pessoa atualizada com sucesso!', 'success')
             return redirect(url_for('pessoas'))
@@ -228,6 +251,7 @@ def edit_pessoa(cpf):
             db.session.rollback()
             flash(f'Ocorreu um erro ao atualizar a pessoa: {e}', 'error')
             print(e)
+            return redirect(url_for('edit_pessoa', cpf=cpf))
 
     # GET Request
     cursos = Curso.query.all()
@@ -235,6 +259,22 @@ def edit_pessoa(cpf):
     cargos = Cargo.query.all()
     deficiencias = Deficiencia.query.all()
     return render_template('edit_pessoa.html', pessoa=pessoa, cursos=cursos, departamentos=departamentos, cargos=cargos, deficiencias=deficiencias)
+
+@app.route('/pessoa/delete/<string:cpf>', methods=['POST'])
+def delete_pessoa(cpf):
+    try:
+        sql_query = get_sql_from_file('delete_person.sql')
+        db.session.execute(text(sql_query), {'cpf': cpf})
+        db.session.commit()
+        flash('Pessoa removida com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        # A IntegrityError (ou o erro específico do seu DB) provavelmente ocorrerá aqui
+        # se houver restrições de chave estrangeira (e.g., a pessoa é um Aluno ou Servidor).
+        flash('Não foi possível remover a pessoa. Verifique se ela possui papéis ativos (aluno, servidor) que impedem a exclusão.', 'error')
+        print(f"Erro ao deletar pessoa: {e}")
+    return redirect(url_for('pessoas'))
+
 
 @app.route('/assign_role', methods=['GET', 'POST'])
 def assign_role():
@@ -277,8 +317,7 @@ def assign_role():
             membro_obj = None
             if is_membro:
                 membro_obj = MembroDaEquipe(
-                    regimedetrabalho=request.form.get('regimedetrabalho'),
-                    categoria=request.form.get('categoria_membro')
+                    regimedetrabalho=request.form.get('regimedetrabalho')
                 )
                 db.session.add(membro_obj)
                 db.session.flush()
@@ -358,7 +397,7 @@ def assign_role():
         if not search_cpf.isdigit() or len(search_cpf) != 11:
             flash('CPF de busca inválido. Deve conter exatamente 11 dígitos numéricos.', 'error')
         else:
-            sql_query = get_sql_from_file('select_pessoa_by_cpf.sql')
+            sql_query = get_sql_from_file('select_person_details_for_role_assignment.sql')
             result = db.session.execute(text(sql_query), {'cpf': search_cpf}).first()
             pessoa = result if result else None
             if not pessoa:
