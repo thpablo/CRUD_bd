@@ -62,6 +62,9 @@ header .header-text h2 {
 nav {
     background-color: var(--wine-red);
     padding: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 nav a {
