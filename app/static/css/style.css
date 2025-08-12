@@ -283,3 +283,17 @@ footer {
     text-align: center;
     margin-top: 40px;
 }
+
+/* --- Action Buttons in Tables --- */
+td.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+td.actions form {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background-color: transparent;
+}
