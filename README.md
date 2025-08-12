@@ -1,14 +1,14 @@
 # Sistema de Gerenciamento do CAIN
 
-Este é um sistema web desenvolvido em Flask para gerenciar as informações do Núcleo de Acessibilidade e Inclusão (CAIN).
+Este é um sistema web desenvolvido em Flask e SGBD em PostgresSQL para gerenciar as informações do Núcleo de Acessibilidade e Inclusão (CAIN).
 
 ## Configuração do Ambiente
 
-Siga as instruções abaixo para configurar e rodar o projeto localmente.
+Siga as instruções abaixo para configurar e rodar o projeto.
 
 ### Pré-requisitos
 
-- Python 3.x
+- Python 3
 - PostgreSQL
 - As dependências Python listadas em `requirements.txt`
 
@@ -24,15 +24,13 @@ Siga as instruções abaixo para configurar e rodar o projeto localmente.
     CREATE USER bd_trab_user WITH PASSWORD 'password';
 
     -- Crie o banco de dados
-    CREATE DATABASE bd_trab;
+    CREATE DATABASE bd_trab OWNER bd_trab_user;
 
-    -- Dê ao novo usuário todas as permissões no novo banco de dados
+    -- Dê ao novo usuário todas as permissões no novo banco de dados para confirmar.
     GRANT ALL PRIVILEGES ON DATABASE bd_trab TO bd_trab_user;
     ```
 
 ### 2. Instalação das Dependências
-
-Com o seu ambiente virtual Python ativado, instale as dependências necessárias:
 
 ```bash
 pip install -r requirements.txt
@@ -40,7 +38,7 @@ pip install -r requirements.txt
 
 ### 3. Criação das Tabelas do Banco
 
-O script `create_db.py` lê o arquivo `init.sql` e cria todas as tabelas necessárias no banco de dados que você acabou de configurar.
+O script `create_db.py` lê o arquivo `init.sql` e cria todas as tabelas necessárias no banco de dados que você acabou de configurar. Em seguida, popula com os dados presente no arquivo `populate.sql`. 
 
 Execute o seguinte comando no terminal, na raiz do projeto:
 
@@ -49,8 +47,6 @@ python3 create_db.py
 ```
 
 ### 4. Executando a Aplicação
-
-Após configurar o banco de dados e criar as tabelas, você pode iniciar a aplicação Flask.
 
 Execute o seguinte comando:
 
